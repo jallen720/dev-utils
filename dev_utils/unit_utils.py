@@ -2,7 +2,7 @@ import sys
 import shutil
 import os
 import fileinput
-import dev_utils.dir_data as dir_data
+import dev_utils.dir_utils as dir_utils
 
 
 def check_make_to_dirs(unit_name, from_subdir, to_subdir):
@@ -10,7 +10,7 @@ def check_make_to_dirs(unit_name, from_subdir, to_subdir):
         if not os.path.isdir(to_dir):
             os.makedirs(to_dir)
 
-    for root_dir, extensions in dir_data.ROOT_DIR_EXTENSIONS.items():
+    for root_dir, extensions in dir_utils.ROOT_DIR_EXTENSIONS.items():
         for extension in extensions:
             if os.path.isfile(root_dir + from_subdir + unit_name + extension):
                 check_make_to_dir(root_dir + to_subdir)
@@ -19,10 +19,10 @@ def check_make_to_dirs(unit_name, from_subdir, to_subdir):
 def get_header_paths(unit_name, from_subdir, to_subdir):
     header_paths = {
         "from": [],
-        "to": []
+        "to": [],
     }
 
-    for header_extension in dir_data.ROOT_DIR_EXTENSIONS["include/"]:
+    for header_extension in dir_utils.ROOT_DIR_EXTENSIONS["include/"]:
         file_name        = unit_name + header_extension
         from_header_path = from_subdir + file_name
         to_header_path   = to_subdir + file_name
@@ -51,7 +51,7 @@ def update_includes(unit_name, from_subdir, to_subdir):
     header_paths = get_header_paths(unit_name, from_subdir, to_subdir)
 
     def for_each_source_file(file_cb):
-        for root_dir in dir_data.ROOT_DIR_EXTENSIONS:
+        for root_dir in dir_utils.ROOT_DIR_EXTENSIONS:
             for root, subdirs, file_names in os.walk(root_dir):
                 for file_name in file_names:
                     file_cb(os.path.join(root, file_name))
@@ -84,7 +84,7 @@ def move_file(file_name, from_dir, to_dir):
 
 
 def move_files(unit_name, from_subdir, to_subdir):
-    for root_dir, extensions in dir_data.ROOT_DIR_EXTENSIONS.items():
+    for root_dir, extensions in dir_utils.ROOT_DIR_EXTENSIONS.items():
         for extension in extensions:
             if os.path.isfile(root_dir + from_subdir + unit_name + extension):
                 move_file(
@@ -93,15 +93,18 @@ def move_files(unit_name, from_subdir, to_subdir):
                     root_dir + to_subdir)
 
 
-def check_clean_empty_from_subdir(from_subdir):
-    for root_dir in dir_data.ROOT_DIR_EXTENSIONS:
+def check_remove_empty_from_subdir(from_subdir):
+    for root_dir in dir_utils.ROOT_DIR_EXTENSIONS:
         for root, subdirs, files in os.walk(root_dir + from_subdir):
             if not files and not subdirs:
                 os.rmdir(root_dir + from_subdir)
 
 
 def move_unit(unit_name, from_subdir, to_subdir):
-    check_make_to_dirs(unit_name, from_subdir, to_subdir)
+    check_make_to_dirs(
+        unit_name,
+        from_subdir,
+        to_subdir)
 
     update_includes(
         unit_name,
@@ -113,4 +116,4 @@ def move_unit(unit_name, from_subdir, to_subdir):
         from_subdir,
         to_subdir)
 
-    check_clean_empty_from_subdir(from_subdir)
+    check_remove_empty_from_subdir(from_subdir)

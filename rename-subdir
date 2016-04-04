@@ -2,9 +2,8 @@
 
 import sys
 import os
-import dev_utils.utils as utils
-import dev_utils.dir_data as dir_data
-from dev_utils.move_unit import move_unit
+import dev_utils.dir_utils as dir_utils
+import dev_utils.unit_utils as unit_utils
 
 
 def split_unit_file_name(file_name, unit_cb):
@@ -21,13 +20,13 @@ def get_associated_units(from_subdir):
     def check_add_associated_unit(unit_name, file_extension):
         def can_add_unit():
             return (
-                dir_data.is_unit_file_extension(file_extension) and
+                dir_utils.is_source_file_extension(file_extension) and
                 unit_name not in associated_units)
 
         if can_add_unit():
             associated_units.append(unit_name)
 
-    for root_dir in dir_data.ROOT_DIR_EXTENSIONS:
+    for root_dir in dir_utils.ROOT_DIR_EXTENSIONS:
         for root, subdirs, file_names in os.walk(root_dir + from_subdir):
             for file_name in file_names:
                 split_unit_file_name(file_name, check_add_associated_unit)
@@ -37,14 +36,14 @@ def get_associated_units(from_subdir):
 
 def rename_subdir(from_subdir, to_subdir):
     for associated_unit in get_associated_units(from_subdir):
-        move_unit(associated_unit, from_subdir, to_subdir)
+        unit_utils.move_unit(associated_unit, from_subdir, to_subdir)
 
 
 if __name__ == "__main__":
     if len(sys.argv) == 3:
         rename_subdir(
-            from_subdir = utils.directify(sys.argv[1]),
-            to_subdir   = utils.directify(sys.argv[2]))
+            from_subdir = dir_utils.directify(sys.argv[1]),
+            to_subdir   = dir_utils.directify(sys.argv[2]))
     else:
         print("usage: from-subdirectory to-subdirectory")
 
