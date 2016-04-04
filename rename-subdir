@@ -1,0 +1,50 @@
+#!/usr/bin/python3.4
+
+import sys
+import os
+import dev_utils.utils as utils
+import dev_utils.dir_data as dir_data
+from dev_utils.move_unit import move_unit
+
+
+def split_unit_file_name(file_name, unit_cb):
+    unit_file_name = file_name.rpartition(".")
+
+    return unit_cb(
+        unit_name      = unit_file_name[0],
+        file_extension = unit_file_name[1] + unit_file_name[2])
+
+
+def get_associated_units(from_subdir):
+    associated_units = []
+
+    def check_add_associated_unit(unit_name, file_extension):
+        def can_add_unit():
+            return (
+                dir_data.is_unit_file_extension(file_extension) and
+                unit_name not in associated_units)
+
+        if can_add_unit():
+            associated_units.append(unit_name)
+
+    for root_dir in dir_data.ROOT_DIR_EXTENSIONS:
+        for root, subdirs, file_names in os.walk(root_dir + from_subdir):
+            for file_name in file_names:
+                split_unit_file_name(file_name, check_add_associated_unit)
+
+    return associated_units
+
+
+def rename_subdir(from_subdir, to_subdir):
+    for associated_unit in get_associated_units(from_subdir):
+        move_unit(associated_unit, from_subdir, to_subdir)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 3:
+        rename_subdir(
+            from_subdir = utils.directify(sys.argv[1]),
+            to_subdir   = utils.directify(sys.argv[2]))
+    else:
+        print("usage: from-subdirectory to-subdirectory")
+

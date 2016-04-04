@@ -1,0 +1,15 @@
+#!/usr/bin/python3.4
+
+import sys
+from dev_utils.move_unit import move_unit
+import dev_utils.utils as utils
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 4:
+        move_unit(
+            unit_name   = sys.argv[1],
+            from_subdir = utils.directify(sys.argv[2]),
+            to_subdir   = utils.directify(sys.argv[3]))
+    else:
+        print("usage: unit-name from-subdirectory to-subdirectory")
