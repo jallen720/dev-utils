@@ -33,10 +33,10 @@ optionsPrompt title msgLines options = do
 
 buildOptionsMsg :: String -> [String] -> [String] -> String
 buildOptionsMsg title msgLines options =
-   (buildMultiLineMsg title msgLines) ++
+   buildMultiLineMsg title msgLines ++
    "    ? (" ++ showOptions ++ "): "
    where showOptions = intercalate "/" $ toUpperDefault options
-         toUpperDefault (first:rest) = (map toUpper first) : rest
+         toUpperDefault (first:rest) = map toUpper first : rest
 
 
 buildMultiLineMsg :: String -> [String] -> String

@@ -19,16 +19,16 @@ import DevUtils.Utils (
 
 type Name      = String
 type Namespace = String
-type SubDir    = String
+type Subdir    = String
 type FileKeys  = [Char]
-type UnitInput = (Name, Namespace, SubDir, FileKeys)
+type UnitInput = (Name, Namespace, Subdir, FileKeys)
 
 
 data Unit =
    Unit {
       name      :: Name,
       namespace :: Namespace,
-      subDir    :: SubDir,
+      subdir    :: Subdir,
       fileKeys  :: FileKeys
    }
 
@@ -72,14 +72,14 @@ unitFileSnippets = [
 
 
 createUnit :: UnitInput -> Unit
-createUnit (name, namespace, subDir, fileKeys) =
-   Unit name namespace directifiedSubDir uniqueFileKeys
-   where directifiedSubDir =
+createUnit (name, namespace, subdir, fileKeys) =
+   Unit name namespace directifiedSubdir uniqueFileKeys
+   where directifiedSubdir =
             if isDirectified
-               then subDir
-               else subDir ++ "/"
+               then subdir
+               else subdir ++ "/"
 
-         isDirectified = last subDir == '/'
+         isDirectified = last subdir == '/'
          uniqueFileKeys = nub . filter isFileKey $ fileKeys
          isFileKey = (`elem` keys unitData)
 
@@ -111,54 +111,47 @@ associatedFiles unit@(Unit _ _ _ fileKeys) = map (associatedFile unit) fileKeys
 
 
 associatedFile :: Unit -> Char -> String
-associatedFile (Unit name _ subDir _) fileKey =
-   createFilePath (get fileKey unitData)
+associatedFile (Unit name _ subdir _) fileKey =
+   createFilePath $ get fileKey unitData
    where createFilePath unitFileData =
             get "rootDir" unitFileData ++
-            subDir ++
+            subdir ++
             name ++
             get "extension" unitFileData
 
 
 headerSnippet :: Unit -> String
 headerSnippet unit =
-   unlines [
-      "#pragma once",
-      "",
-      emptyNamespaceSnippet unit
-   ]
-   ++ checkTemplateInclude
+   unlines [ "#pragma once"
+           , ""
+           , emptyNamespaceSnippet unit ]
+           ++ checkTemplateInclude
+
    where checkTemplateInclude =
             if templateImplFileKey `elem` (fileKeys unit)
-               then unlines [
-                     "",
-                     unitInclude unit templateImplPath
-                  ]
-               else []
+               then "\n" ++ unitInclude unit templateImplPath ++ "\n"
+               else ""
 
 
 templateImplSnippet :: Unit -> String
-templateImplSnippet unit = unlines [emptyNamespaceSnippet unit]
+templateImplSnippet unit = emptyNamespaceSnippet unit ++ "\n"
 
 
 sourceSnippet :: Unit -> String
 sourceSnippet unit =
-   unlines [
-      unitInclude unit headerPath,
-      "",
-      emptyNamespaceSnippet unit
-   ]
+   unlines [ unitInclude unit headerPath
+           , ""
+           , emptyNamespaceSnippet unit ]
 
 
 testSourceSnippet :: Unit -> String
 testSourceSnippet unit =
-   unlines [
-      unitInclude unit headerPath,
-      "",
-      "#include <gtest/gtest.h>",
-      "",
-      namespaceSnippet testSnippet unit
-   ]
+   unlines [ unitInclude unit headerPath
+           , ""
+           , "#include <gtest/gtest.h>"
+           , ""
+           , namespaceSnippet testSnippet unit ]
+
    where testSnippet =
             "TEST(" ++ name unit ++ "Test, test) {\n" ++
             "\n" ++
@@ -191,5 +184,5 @@ templateImplPath = includePath templateImplExtension
 
 
 includePath :: String -> Unit -> String
-includePath extension (Unit name _ subDir _) =
-   subDir ++ name ++ extension
+includePath extension (Unit name _ subdir _) =
+   subdir ++ name ++ extension
