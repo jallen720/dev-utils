@@ -70,9 +70,10 @@ nonEmptyInputPrompt title = inputPrompt title >>= checkInput
                else return input
 
          retry = do
-            emptyLine
-            putStrLn $ "    " ++ show title ++ " can't be empty!"
-            emptyLine
+            putStr $ "\n" ++
+                     "    " ++ show title ++ " can't be empty!\n" ++
+                     "\n"
+
             nonEmptyInputPrompt title
 
 
