@@ -2,48 +2,48 @@
 
 import sys
 import os
-import dev_utils.dir_utils as dir_utils
-import dev_utils.unit_utils as unit_utils
+import devUtils.dirUtils as dirUtils
+import devUtils.unitUtils as unitUtils
 
 
-def split_unit_file_name(file_name, unit_cb):
-    unit_file_name = file_name.rpartition(".")
+def splitUnitFileName(fileName, unitCB):
+    unitFileName = fileName.rpartition(".")
 
-    return unit_cb(
-        unit_name      = unit_file_name[0],
-        file_extension = unit_file_name[1] + unit_file_name[2])
+    return unitCB(
+        unitName      = unitFileName[0],
+        fileExtension = unitFileName[1] + unitFileName[2])
 
 
-def get_associated_units(from_subdir):
-    associated_units = []
+def getAssociatedUnits(fromSubdir):
+    associatedUnits = []
 
-    def check_add_associated_unit(unit_name, file_extension):
-        def can_add_unit():
+    def checkAddAssociatedUnit(unitName, fileExtension):
+        def canAddUnit():
             return (
-                dir_utils.is_source_file_extension(file_extension) and
-                unit_name not in associated_units)
+                dirUtils.isSourceFileExtension(fileExtension) and
+                unitName not in associatedUnits)
 
-        if can_add_unit():
-            associated_units.append(unit_name)
+        if canAddUnit():
+            associatedUnits.append(unitName)
 
-    for root_dir in dir_utils.ROOT_DIR_EXTENSIONS:
-        for root, subdirs, file_names in os.walk(root_dir + from_subdir):
-            for file_name in file_names:
-                split_unit_file_name(file_name, check_add_associated_unit)
+    for rootDir in dirUtils.ROOT_DIR_EXTENSIONS:
+        for root, subdirs, fileNames in os.walk(rootDir + fromSubdir):
+            for fileName in fileNames:
+                splitUnitFileName(fileName, checkAddAssociatedUnit)
 
-    return associated_units
+    return associatedUnits
 
 
-def rename_subdir(from_subdir, to_subdir):
-    for associated_unit in get_associated_units(from_subdir):
-        unit_utils.move_unit(associated_unit, from_subdir, to_subdir)
+def renameSubdir(fromSubdir, toSubdir):
+    for associatedUnit in getAssociatedUnits(fromSubdir):
+        unitUtils.moveUnit(associatedUnit, fromSubdir, toSubdir)
 
 
 if __name__ == "__main__":
     if len(sys.argv) == 3:
-        rename_subdir(
-            from_subdir = dir_utils.directify(sys.argv[1]),
-            to_subdir   = dir_utils.directify(sys.argv[2]))
+        renameSubdir(
+            fromSubdir = dirUtils.directify(sys.argv[1]),
+            toSubdir   = dirUtils.directify(sys.argv[2]))
     else:
         print("usage: from-subdirectory to-subdirectory")
 
