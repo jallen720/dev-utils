@@ -1,7 +1,7 @@
 module DevUtils.Unit (
    UnitInput,
    Unit,
-   unitData,
+   unitFileData,
    createUnit,
    createUnitFiles,
    associatedFiles)
@@ -39,7 +39,7 @@ templateImplExtension = ".ipp"
 templateImplFileKey = 'i'
 
 
-unitData = [
+unitFileData = [
       ('h', [
          ("description" , "header"),
          ("rootDir"     , includeRootDir),
@@ -81,7 +81,7 @@ createUnit (name, namespace, subdir, fileKeys) =
 
          isDirectified = last subdir == '/'
          uniqueFileKeys = nub . filter isFileKey $ fileKeys
-         isFileKey = (`elem` keys unitData)
+         isFileKey = (`elem` keys unitFileData)
 
 
 createUnitFiles :: Unit -> IO ()
@@ -112,7 +112,7 @@ associatedFiles unit@(Unit _ _ _ fileKeys) = map (associatedFile unit) fileKeys
 
 associatedFile :: Unit -> Char -> String
 associatedFile (Unit name _ subdir _) fileKey =
-   createFilePath $ get fileKey unitData
+   createFilePath $ get fileKey unitFileData
    where createFilePath unitFileData =
             get "rootDir" unitFileData ++
             subdir ++
