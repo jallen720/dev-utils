@@ -1,12 +1,9 @@
-module DevUtils.FileSystem (createFile) where
+module DevUtils.FileSystem where
 
 
 import System.Directory (createDirectoryIfMissing)
 import System.IO (writeFile)
-
-import DevUtils.Utils (
-   subString,
-   lastIndex)
+import DevUtils.Utils (subString, lastIndex)
 
 
 createFile :: String -> String -> IO ()

@@ -1,20 +1,16 @@
-module DevUtils.Unit (
-   UnitInput,
-   Unit,
-   unitFileData,
-   createUnit,
-   createUnitFiles,
-   associatedFiles)
-where
+module DevUtils.Unit
+   ( UnitInput
+   , Unit
+   , unitFileData
+   , createUnit
+   , createUnitFiles
+   , associatedFiles ) where
 
 
 import System.Directory (doesFileExist)
 import Data.List (nub)
 import DevUtils.FileSystem (createFile)
-
-import DevUtils.Utils (
-   get,
-   keys)
+import DevUtils.Utils (get, keys)
 
 
 type Name      = String
@@ -25,12 +21,11 @@ type UnitInput = (Name, Namespace, Subdir, FileKeys)
 
 
 data Unit =
-   Unit {
-      name      :: Name,
-      namespace :: Namespace,
-      subdir    :: Subdir,
-      fileKeys  :: FileKeys
-   }
+   Unit
+      { name      :: Name
+      , namespace :: Namespace
+      , subdir    :: Subdir
+      , fileKeys  :: FileKeys }
 
 
 includeRootDir = "include/"
@@ -122,10 +117,11 @@ associatedFile (Unit name _ subdir _) fileKey =
 
 headerSnippet :: Unit -> String
 headerSnippet unit =
-   unlines [ "#pragma once"
-           , ""
-           , emptyNamespaceSnippet unit ]
-           ++ checkTemplateInclude
+   unlines
+      [ "#pragma once"
+      , ""
+      , emptyNamespaceSnippet unit ]
+   ++ checkTemplateInclude
 
    where checkTemplateInclude =
             if templateImplFileKey `elem` (fileKeys unit)
@@ -139,18 +135,20 @@ templateImplSnippet unit = emptyNamespaceSnippet unit ++ "\n"
 
 sourceSnippet :: Unit -> String
 sourceSnippet unit =
-   unlines [ unitInclude unit headerPath
-           , ""
-           , emptyNamespaceSnippet unit ]
+   unlines
+      [ unitInclude unit headerPath
+      , ""
+      , emptyNamespaceSnippet unit ]
 
 
 testSourceSnippet :: Unit -> String
 testSourceSnippet unit =
-   unlines [ unitInclude unit headerPath
-           , ""
-           , "#include <gtest/gtest.h>"
-           , ""
-           , namespaceSnippet testSnippet unit ]
+   unlines
+      [ unitInclude unit headerPath
+      , ""
+      , "#include <gtest/gtest.h>"
+      , ""
+      , namespaceSnippet testSnippet unit ]
 
    where testSnippet =
             "TEST(" ++ name unit ++ "Test, test) {\n" ++

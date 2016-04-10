@@ -1,20 +1,13 @@
-module DevUtils.UI (
-   optionsPrompt,
-   confirmationPrompt,
-   nonEmptyInputPrompt,
-   emptyLine)
-where
+module DevUtils.UI
+   ( optionsPrompt
+   , confirmationPrompt
+   , nonEmptyInputPrompt
+   , emptyLine ) where
 
 
-import Data.Char (
-   toUpper,
-   toLower)
-
+import Data.Char (toUpper, toLower)
 import Data.List (intercalate)
-
-import System.IO (
-   hFlush,
-   stdout)
+import System.IO (hFlush, stdout)
 
 
 optionsPrompt :: String -> [String] -> [String] -> IO String
@@ -35,6 +28,7 @@ buildOptionsMsg :: String -> [String] -> [String] -> String
 buildOptionsMsg title msgLines options =
    buildMultiLineMsg title msgLines ++
    "    ? (" ++ showOptions ++ "): "
+
    where showOptions = intercalate "/" $ toUpperDefault options
          toUpperDefault (first:rest) = map toUpper first : rest
 
@@ -43,8 +37,8 @@ buildMultiLineMsg :: String -> [String] -> String
 buildMultiLineMsg title msgLines =
    "\n" ++
    title ++ ":\n" ++
-   showMsgLines
-   where showMsgLines = unlines $ map ("    " ++) msgLines
+   showMsgLines msgLines
+   where showMsgLines = unlines . map ("    " ++)
 
 
 confirmationPrompt :: String -> [String] -> (IO (), IO ()) -> IO ()
@@ -70,9 +64,10 @@ nonEmptyInputPrompt title = inputPrompt title >>= checkInput
                else return input
 
          retry = do
-            putStr $ "\n" ++
-                     "    " ++ show title ++ " can't be empty!\n" ++
-                     "\n"
+            putStr . unlines $
+               [ ""
+               , "    " ++ show title ++ " can't be empty!"
+               , "" ]
 
             nonEmptyInputPrompt title
 

@@ -1,22 +1,20 @@
 #!/usr/bin/runghc
 
-import DevUtils.UI (
-   optionsPrompt,
-   confirmationPrompt,
-   nonEmptyInputPrompt,
-   emptyLine)
+import DevUtils.UI
+   ( optionsPrompt
+   , confirmationPrompt
+   , nonEmptyInputPrompt
+   , emptyLine )
 
-import DevUtils.Unit (
-   UnitInput,
-   Unit,
-   unitFileData,
-   createUnit,
-   associatedFiles,
-   createUnitFiles)
+import DevUtils.Unit
+   ( UnitInput
+   , Unit
+   , unitFileData
+   , createUnit
+   , associatedFiles
+   , createUnitFiles )
 
-import DevUtils.Utils (
-   get,
-   keys)
+import DevUtils.Utils (get, keys)
 
 
 main :: IO ()
