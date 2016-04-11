@@ -34,35 +34,40 @@ templateImplExtension = ".ipp"
 templateImplFileKey = 'i'
 
 
-unitFileData = [
-      ('h', [
-         ("description" , "header"),
-         ("rootDir"     , includeRootDir),
-         ("extension"   , headerExtension)
-      ]),
-      (templateImplFileKey, [
-         ("description" , "template implementation"),
-         ("rootDir"     , includeRootDir),
-         ("extension"   , templateImplExtension)
-      ]),
-      ('s', [
-         ("description" , "source"),
-         ("rootDir"     , "src/"),
-         ("extension"   , ".cpp")
-      ]),
-      ('t', [
-         ("description" , "test source"),
-         ("rootDir"     , "tests/src/"),
-         ("extension"   , ".cpp")
-      ])
+unitFileData =
+   [
+      (
+         'h',
+         [ ("description" , "header")
+         , ("rootDir"     , includeRootDir)
+         , ("extension"   , headerExtension) ]
+      ),
+      (
+         templateImplFileKey,
+         [ ("description" , "template implementation")
+         , ("rootDir"     , includeRootDir)
+         , ("extension"   , templateImplExtension) ]
+      ),
+      (
+         's',
+         [ ("description" , "source")
+         , ("rootDir"     , "src/")
+         , ("extension"   , ".cpp") ]
+      ),
+      (
+         't',
+         [ ("description" , "test source")
+         , ("rootDir"     , "tests/src/")
+         , ("extension"   , ".cpp") ]
+      )
    ]
 
 
 unitFileSnippets =
-   [ ('h', headerSnippet)
-   , (templateImplFileKey, templateImplSnippet)
-   , ('s', sourceSnippet)
-   , ('t', testSourceSnippet) ]
+   [ ('h'                 , headerSnippet)
+   , (templateImplFileKey , templateImplSnippet)
+   , ('s'                 , sourceSnippet)
+   , ('t'                 , testSourceSnippet) ]
 
 
 createUnit :: UnitInput -> Unit
