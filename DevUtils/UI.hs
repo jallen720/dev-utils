@@ -2,7 +2,8 @@ module DevUtils.UI
    ( optionsPrompt
    , confirmationPrompt
    , nonEmptyInputPrompt
-   , emptyLine ) where
+   , runUI
+   , inputBlock ) where
 
 
 import Data.Char (toUpper, toLower)
@@ -21,7 +22,9 @@ optionsPrompt title msgLines options = do
             else map toLower option
 
    prompt $ buildOptionsMsg title msgLines options
-   getLine >>= return . optionOrDefault
+   response <- getLine
+   emptyLine
+   return . optionOrDefault $ response
 
 
 buildOptionsMsg :: String -> [String] -> [String] -> String
@@ -35,7 +38,6 @@ buildOptionsMsg title msgLines options =
 
 buildMultiLineMsg :: String -> [String] -> String
 buildMultiLineMsg title msgLines =
-   "\n" ++
    title ++ ":\n" ++
    showMsgLines msgLines
    where showMsgLines = unlines . map ("    " ++)
@@ -43,11 +45,11 @@ buildMultiLineMsg title msgLines =
 
 confirmationPrompt :: String -> [String] -> (IO (), IO ()) -> IO ()
 confirmationPrompt title msgLines (yesAction, noAction) =
-   optionsPrompt title msgLines ["yes", "no"] >>= \answer -> do
-      emptyLine
-      if answer == "yes"
-         then yesAction
-         else noAction
+   optionsPrompt title msgLines ["yes", "no"] >>= selectAction
+   where selectAction response =
+            if response == "yes"
+               then yesAction
+               else noAction
 
 
 inputPrompt :: String -> IO String
@@ -78,5 +80,24 @@ prompt msg = do
    hFlush stdout
 
 
+runUI :: IO () -> IO ()
+runUI ui = do
+   emptyLine
+   ui
+   emptyLine
+
+
 emptyLine :: IO ()
 emptyLine = putStr "\n"
+
+
+inputBlock :: (String -> IO String) -> [String] -> IO [(String, String)]
+inputBlock prompter promptTitles = do
+   let
+      prompt promptTitle = do
+         response <- prompter promptTitle
+         return (promptTitle, response)
+
+   responses <- mapM prompt promptTitles
+   emptyLine
+   return responses

@@ -5,7 +5,8 @@ import DevUtils.UI
    ( optionsPrompt
    , confirmationPrompt
    , nonEmptyInputPrompt
-   , emptyLine )
+   , runUI
+   , inputBlock )
 
 import DevUtils.Unit
    ( UnitInput
@@ -19,17 +20,31 @@ import DevUtils.Utils (get, keys)
 
 
 main :: IO ()
-main = promptUnitInput >>= confirmCreateUnitFiles . createUnit
+main = runUI addUnitUI
+
+
+addUnitUI :: IO ()
+addUnitUI = promptUnitInput >>= confirmCreateUnitFiles . createUnit
 
 
 promptUnitInput :: IO UnitInput
 promptUnitInput = do
-   emptyLine
-   name      <- nonEmptyInputPrompt "unit name"
-   namespace <- nonEmptyInputPrompt "unit namespace"
-   subDir    <- nonEmptyInputPrompt "unit subdirectory"
-   fileKeys  <- promptFileKeys
-   return (name, namespace, subDir, fileKeys)
+   unitInfo <- promptUnitInfo
+   fileKeys <- promptFileKeys
+
+   return
+      ( get "unit name"         unitInfo
+      , get "unit namespace"    unitInfo
+      , get "unit subdirectory" unitInfo
+      , fileKeys )
+
+
+promptUnitInfo :: IO [(String, String)]
+promptUnitInfo =
+   inputBlock nonEmptyInputPrompt
+      [ "unit name"
+      , "unit namespace"
+      , "unit subdirectory" ]
 
 
 promptFileKeys :: IO [Char]
@@ -43,6 +58,5 @@ promptFileKeys = optionsPrompt "unit files" keyDescriptions keyOptions
 confirmCreateUnitFiles :: Unit -> IO ()
 confirmCreateUnitFiles unit = do
    confirmationPrompt "create unit files" (associatedFiles unit) (yes, no)
-   emptyLine
    where yes = createUnitFiles unit
          no = putStrLn "canceled"
