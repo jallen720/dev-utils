@@ -58,12 +58,11 @@ unitFileData = [
    ]
 
 
-unitFileSnippets = [
-      ('h', headerSnippet),
-      (templateImplFileKey, templateImplSnippet),
-      ('s', sourceSnippet),
-      ('t', testSourceSnippet)
-   ]
+unitFileSnippets =
+   [ ('h', headerSnippet)
+   , (templateImplFileKey, templateImplSnippet)
+   , ('s', sourceSnippet)
+   , ('t', testSourceSnippet) ]
 
 
 createUnit :: UnitInput -> Unit

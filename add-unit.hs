@@ -1,5 +1,6 @@
 #!/usr/bin/runghc
 
+
 import DevUtils.UI
    ( optionsPrompt
    , confirmationPrompt
@@ -41,7 +42,7 @@ promptFileKeys = optionsPrompt "unit files" keyDescriptions keyOptions
 
 confirmCreateUnitFiles :: Unit -> IO ()
 confirmCreateUnitFiles unit = do
-   confirmationPrompt "create" (associatedFiles unit) (yes, no)
+   confirmationPrompt "create unit files" (associatedFiles unit) (yes, no)
    emptyLine
    where yes = createUnitFiles unit
          no = putStrLn "canceled"
