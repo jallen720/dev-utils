@@ -6,9 +6,9 @@ module DevUtils.UI
    , inputBlock ) where
 
 
+import System.IO (hFlush, stdout)
 import Data.Char (toUpper, toLower)
 import Data.List (intercalate)
-import System.IO (hFlush, stdout)
 
 
 optionsPrompt :: String -> [String] -> [String] -> IO String

@@ -1,6 +1,3 @@
-#!/usr/bin/runghc
-
-
 import DevUtils.UI
    ( optionsPrompt
    , confirmationPrompt

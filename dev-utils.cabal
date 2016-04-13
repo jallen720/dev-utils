@@ -1,0 +1,43 @@
+name          : dev-utils
+version       : 0.1.0.0
+synopsis      : General development utilities
+description   : General development utilities
+homepage      : https://bitbucket.org/jallen720/dev-utils
+license       : BSD3
+license-file  : LICENSE
+author        : Joel Allen
+maintainer    : joelallen720@gmail.com
+copyright     : 2016 Joel Allen
+category      : Development
+build-type    : Simple
+cabal-version : >= 1.10
+
+
+library
+    default-language : Haskell2010
+    build-depends    : base >= 4.7 && < 5, directory
+    hs-source-dirs   : src
+    exposed-modules  : DevUtils.UI, DevUtils.Unit, DevUtils.Utils
+    other-modules    : DevUtils.FileSystem
+
+
+executable add-unit
+    default-language : Haskell2010
+    build-depends    : base, dev-utils
+    hs-source-dirs   : app
+    main-is          : add-unit.hs
+    ghc-options      : -threaded -rtsopts -with-rtsopts=-N
+
+
+test-suite dev-utils-test
+    default-language : Haskell2010
+    build-depends    : base, dev-utils
+    hs-source-dirs   : test
+    main-is          : Spec.hs
+    ghc-options      : -threaded -rtsopts -with-rtsopts=-N
+    type             : exitcode-stdio-1.0
+
+
+source-repository head
+    type     : git
+    location : https://bitbucket.org/jallen720/dev-utils
