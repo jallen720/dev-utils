@@ -1,5 +1,5 @@
 #!/bin/bash
-RUN_TESTS="build-proj && clear && ./bin/tests"
+RUN_TESTS="cpp-build && clear && ./bin/tests"
 
 if [ $# -eq 1 ]
   then eval $RUN_TESTS --gtest_filter=$1
