@@ -1,0 +1,2 @@
+#!/bin/bash
+stack build && clear && stack exec $1 $2 $3 $4 $5 $6
