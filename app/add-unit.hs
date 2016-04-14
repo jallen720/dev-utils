@@ -1,3 +1,5 @@
+import Data.List (nub)
+
 import DevUtils.UI
    ( optionsPrompt
    , confirmationPrompt
@@ -7,6 +9,7 @@ import DevUtils.UI
 
 import DevUtils.Unit
    ( UnitInput
+   , FileKey
    , Unit
    , unitFileData
    , createUnit
@@ -21,39 +24,39 @@ main = runUI addUnitUI
 
 
 addUnitUI :: IO ()
-addUnitUI = promptUnitInput >>= confirmCreateUnitFiles . createUnit
+addUnitUI = do
+   unitInput <- promptUnitInput
+   fileKeys <- promptFileKeys
+   confirmCreateUnitFiles (createUnit unitInput) fileKeys
 
 
 promptUnitInput :: IO UnitInput
-promptUnitInput = do
-   unitInfo <- promptUnitInfo
-   fileKeys <- promptFileKeys
-
-   return
-      ( get "unit name"         unitInfo
-      , get "unit namespace"    unitInfo
-      , get "unit subdirectory" unitInfo
-      , fileKeys )
-
-
-promptUnitInfo :: IO [(String, String)]
-promptUnitInfo =
+promptUnitInput =
    inputBlock nonEmptyInputPrompt
       [ "unit name"
       , "unit namespace"
       , "unit subdirectory" ]
+   >>= return . packageUnitInput
+   where packageUnitInput unitInput =
+            ( get "unit name"         unitInput
+            , get "unit namespace"    unitInput
+            , get "unit subdirectory" unitInput )
 
 
-promptFileKeys :: IO [Char]
-promptFileKeys = optionsPrompt "unit files" keyDescriptions keyOptions
+promptFileKeys :: IO [FileKey]
+promptFileKeys =
+   optionsPrompt "unit files" keyDescriptions keyOptions >>= return . uniqueKeys
    where keyDescriptions = map (showDescription . keyDescription) unitFileData
          keyDescription (key, keyData) = (key, get "description" keyData)
          showDescription (key, description) = key : ": " ++ description
          keyOptions = map (:"") (keys unitFileData)
+         uniqueKeys fileKeys = nub . filter isFileKey $ fileKeys
+         isFileKey = (`elem` keys unitFileData)
 
 
-confirmCreateUnitFiles :: Unit -> IO ()
-confirmCreateUnitFiles unit = do
-   confirmationPrompt "create unit files" (associatedFiles unit) (yes, no)
-   where yes = createUnitFiles unit
+confirmCreateUnitFiles :: Unit -> [FileKey] -> IO ()
+confirmCreateUnitFiles unit fileKeys =
+   confirmationPrompt "create unit files" unitFiles (yes, no)
+   where unitFiles = associatedFiles unit fileKeys
+         yes = createUnitFiles unit fileKeys
          no = putStrLn "canceled"

@@ -1,5 +1,6 @@
 module DevUtils.Unit
    ( UnitInput
+   , FileKey
    , Unit
    , unitFileData
    , createUnit
@@ -8,24 +9,22 @@ module DevUtils.Unit
 
 
 import System.Directory (doesFileExist)
-import Data.List (nub)
 import DevUtils.FileSystem (createFile)
-import DevUtils.Utils (get, keys)
+import DevUtils.Utils (get)
 
 
 type Name      = String
 type Namespace = String
 type Subdir    = String
-type FileKeys  = [Char]
-type UnitInput = (Name, Namespace, Subdir, FileKeys)
+type UnitInput = (Name, Namespace, Subdir)
+type FileKey   = Char
 
 
 data Unit =
    Unit
       { name      :: Name
       , namespace :: Namespace
-      , subdir    :: Subdir
-      , fileKeys  :: FileKeys }
+      , subdir    :: Subdir }
 
 
 includeRootDir = "include/"
@@ -63,33 +62,29 @@ unitFileData =
    ]
 
 
-unitFileSnippets =
-   [ ('h'                 , headerSnippet)
-   , (templateImplFileKey , templateImplSnippet)
+snippetGenerators =
+   [ (templateImplFileKey , templateImplSnippet)
    , ('s'                 , sourceSnippet)
    , ('t'                 , testSourceSnippet) ]
 
 
 createUnit :: UnitInput -> Unit
-createUnit (name, namespace, subdir, fileKeys) =
-   Unit name namespace directifiedSubdir uniqueFileKeys
-   where directifiedSubdir =
-            if isDirectified
+createUnit (name, namespace, subdir) = Unit name namespace validSubdir
+   where validSubdir =
+            if isValidSubdir
                then subdir
                else subdir ++ "/"
 
-         isDirectified = last subdir == '/'
-         uniqueFileKeys = nub . filter isFileKey $ fileKeys
-         isFileKey = (`elem` keys unitFileData)
+         isValidSubdir = last subdir == '/'
 
 
-createUnitFiles :: Unit -> IO ()
-createUnitFiles unit@(Unit _ _ _ fileKeys) = do
+createUnitFiles :: Unit -> [FileKey] -> IO ()
+createUnitFiles unit fileKeys = do
    mapM_ (validateUnitFileDoesntExist unit) fileKeys
-   mapM_ (createUnitFile unit) fileKeys
+   mapM_ (createUnitFile unit fileKeys) fileKeys
 
 
-validateUnitFileDoesntExist :: Unit -> Char -> IO ()
+validateUnitFileDoesntExist :: Unit -> FileKey -> IO ()
 validateUnitFileDoesntExist unit fileKey = doesFileExist unitFile >>= validate
    where unitFile = associatedFile unit fileKey
          validate fileExists =
@@ -98,19 +93,28 @@ validateUnitFileDoesntExist unit fileKey = doesFileExist unitFile >>= validate
                else return ()
 
 
-createUnitFile :: Unit -> Char -> IO ()
-createUnitFile unit fileKey = createFile unitFile content
+createUnitFile :: Unit -> [FileKey] -> FileKey -> IO ()
+createUnitFile unit fileKeys fileKey = createFile unitFile content
    where unitFile = associatedFile unit fileKey
-         content = fileSnippet unit
-         fileSnippet = get fileKey unitFileSnippets
+         content = snippetGenerator unit
+
+         snippetGenerator =
+            if fileKey == 'h'
+               then headerSnippetGenerator
+               else get fileKey snippetGenerators
+
+         headerSnippetGenerator =
+            if 'i' `elem` fileKeys
+               then templateHeaderSnippet
+               else headerSnippet
 
 
-associatedFiles :: Unit -> [String]
-associatedFiles unit@(Unit _ _ _ fileKeys) = map (associatedFile unit) fileKeys
+associatedFiles :: Unit -> [FileKey] -> [String]
+associatedFiles unit fileKeys = map (associatedFile unit) fileKeys
 
 
-associatedFile :: Unit -> Char -> String
-associatedFile (Unit name _ subdir _) fileKey =
+associatedFile :: Unit -> FileKey -> String
+associatedFile (Unit name _ subdir) fileKey =
    createFilePath $ get fileKey unitFileData
    where createFilePath unitFileData =
             get "rootDir" unitFileData ++
@@ -125,12 +129,11 @@ headerSnippet unit =
       [ "#pragma once"
       , ""
       , emptyNamespaceSnippet unit ]
-   ++ checkTemplateInclude
 
-   where checkTemplateInclude =
-            if templateImplFileKey `elem` (fileKeys unit)
-               then "\n" ++ unitInclude unit templateImplPath ++ "\n"
-               else ""
+
+templateHeaderSnippet :: Unit -> String
+templateHeaderSnippet unit = headerSnippet unit ++ templateInclude
+   where templateInclude = "\n" ++ unitInclude unit templateImplPath ++ "\n"
 
 
 templateImplSnippet :: Unit -> String
@@ -160,12 +163,12 @@ testSourceSnippet unit =
             "}"
 
 
-emptyNamespaceSnippet :: Unit -> String
+emptyNamespaceSnippet :: (Unit -> String)
 emptyNamespaceSnippet = namespaceSnippet ""
 
 
 namespaceSnippet :: String -> Unit -> String
-namespaceSnippet content (Unit _ namespace _ _) =
+namespaceSnippet content (Unit _ namespace _) =
    "namespace " ++ namespace ++ " {\n" ++
    "\n" ++
    content ++ "\n" ++
@@ -186,5 +189,5 @@ templateImplPath = includePath templateImplExtension
 
 
 includePath :: String -> Unit -> String
-includePath extension (Unit name _ subdir _) =
+includePath extension (Unit name _ subdir) =
    subdir ++ name ++ extension
