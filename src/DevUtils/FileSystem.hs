@@ -1,8 +1,12 @@
-module DevUtils.FileSystem where
+module DevUtils.FileSystem
+   ( createFile
+   , validateFilesDontExist
+   , dirFromPath ) where
 
 
-import System.Directory (createDirectoryIfMissing)
+import System.Directory (createDirectoryIfMissing, doesFileExist)
 import System.IO (writeFile)
+import Control.Monad (filterM)
 import DevUtils.Utils (subString, lastIndex)
 
 
@@ -11,6 +15,17 @@ createFile path content = do
    putStrLn $ "creating file " ++ show path
    createDirectoryIfMissing True (dirFromPath path)
    writeFile path content
+
+
+validateFilesDontExist :: [String] -> IO ()
+validateFilesDontExist paths =
+   filterM doesFileExist paths >>= checkExistingFiles
+   where checkExistingFiles existingFiles =
+            if length existingFiles > 0
+               then error $ "\n" ++ (unlines . map errorMessage) existingFiles
+               else return ()
+
+         errorMessage = ("    file \"" ++) . (++ "\" already exists")
 
 
 dirFromPath :: String -> String

@@ -11,7 +11,7 @@ module DevUtils.Unit
 
 import System.Directory (doesFileExist)
 import Control.Monad (filterM)
-import DevUtils.FileSystem (createFile)
+import DevUtils.FileSystem (createFile, validateFilesDontExist)
 
 import DevUtils.Utils
    ( get
@@ -80,17 +80,8 @@ createUnit (name, namespace, subdir) = Unit name namespace $ directify subdir
 
 createUnitFiles :: Unit -> [FileKey] -> IO ()
 createUnitFiles unit fileKeys = do
-   mapM_ (validateUnitFileDoesntExist unit) fileKeys
+   validateFilesDontExist $ associatedFiles unit fileKeys
    mapM_ (createUnitFile unit fileKeys) fileKeys
-
-
-validateUnitFileDoesntExist :: Unit -> FileKey -> IO ()
-validateUnitFileDoesntExist unit fileKey = doesFileExist unitFile >>= validate
-   where unitFile = associatedFile unit fileKey
-         validate fileExists =
-            if fileExists
-               then error $ "unit file \"" ++ unitFile ++ "\" already exists"
-               else return ()
 
 
 createUnitFile :: Unit -> [FileKey] -> FileKey -> IO ()
