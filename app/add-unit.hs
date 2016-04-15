@@ -37,6 +37,7 @@ promptUnitInput =
       , "unit namespace"
       , "unit subdirectory" ]
    >>= return . packageUnitInput
+
    where packageUnitInput unitInput =
             ( get "unit name"         unitInput
             , get "unit namespace"    unitInput
