@@ -41,7 +41,9 @@ validateArgs args =
 
 moveUnit :: UnitArgs -> IO ()
 moveUnit unitArgs = unitFileMoveMap unitArgs >>= mapM_ moveUnitFile
-   where moveUnitFile (fromFile, toFile) = renameFile fromFile toFile
+   where moveUnitFile (fromFile, toFile) = do
+            putStrLn $ "moving \"" ++ fromFile ++ "\" -> \"" ++ toFile ++ "\""
+            renameFile fromFile toFile
 
 
 unitFileMoveMap :: UnitArgs -> IO [(String, String)]
