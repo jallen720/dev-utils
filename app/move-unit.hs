@@ -1,10 +1,14 @@
 import System.Environment (getArgs)
-import System.Directory (renameFile)
-import Data.List (intercalate)
+import Data.List (intercalate, nub)
 import Data.String.Utils (replace)
 import Control.Monad (zipWithM)
 import DevUtils.Unit (unitFiles)
 import DevUtils.Utils (directify)
+
+import DevUtils.FileSystem
+   ( checkRemoveEmptySubdirs
+   , dirFromPath
+   , moveFile )
 
 
 data UnitArgs =
@@ -40,10 +44,19 @@ validateArgs args =
 
 
 moveUnit :: UnitArgs -> IO ()
-moveUnit unitArgs = unitFileMoveMap unitArgs >>= mapM_ moveUnitFile
-   where moveUnitFile (fromFile, toFile) = do
-            putStrLn $ "moving \"" ++ fromFile ++ "\" -> \"" ++ toFile ++ "\""
-            renameFile fromFile toFile
+moveUnit unitArgs = do
+   let
+      moveUnitFile (fromFile, toFile) = moveFile fromFile toFile
+      uniqueFileSubdirs = nub . map fileSubdir
+      fileSubdir (fromFile, _) = dirFromPath fromFile
+
+   files <- unitFileMoveMap unitArgs
+   mapM_ moveUnitFile files
+
+   -- Since there can be several unit files per subdir we need to get a unique
+   -- list of subdirs from the files being moved so we don't try to remove the
+   -- same empty subdir more than once.
+   mapM_ checkRemoveEmptySubdirs $ uniqueFileSubdirs files
 
 
 unitFileMoveMap :: UnitArgs -> IO [(String, String)]

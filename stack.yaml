@@ -1,6 +1,7 @@
 resolver: lts-5.12
 packages:
 - '.'
-extra-deps: []
+extra-deps:
+- directory-1.2.5.1
 flags: {}
 extra-package-dbs: []
