@@ -5,12 +5,18 @@ module DevUtils.Unit
    , unitFileData
    , createUnit
    , createUnitFiles
+   , unitFiles
    , associatedFiles ) where
 
 
 import System.Directory (doesFileExist)
+import Control.Monad (filterM)
 import DevUtils.FileSystem (createFile)
-import DevUtils.Utils (get)
+
+import DevUtils.Utils
+   ( get
+   , keys
+   , directify )
 
 
 type Name      = String
@@ -69,13 +75,7 @@ snippetGenerators =
 
 
 createUnit :: UnitInput -> Unit
-createUnit (name, namespace, subdir) = Unit name namespace validSubdir
-   where validSubdir =
-            if isValidSubdir
-               then subdir
-               else subdir ++ "/"
-
-         isValidSubdir = last subdir == '/'
+createUnit (name, namespace, subdir) = Unit name namespace $ directify subdir
 
 
 createUnitFiles :: Unit -> [FileKey] -> IO ()
@@ -107,6 +107,13 @@ createUnitFile unit fileKeys fileKey = createFile unitFile content
             if 'i' `elem` fileKeys
                then templateHeaderSnippet
                else headerSnippet
+
+
+unitFiles :: Name -> Subdir -> IO [String]
+unitFiles name subdir = filterM doesFileExist allFiles
+   where allFiles = associatedFiles unit allFileKeys
+         unit = createUnit (name, "", subdir)
+         allFileKeys = keys unitFileData
 
 
 associatedFiles :: Unit -> [FileKey] -> [String]

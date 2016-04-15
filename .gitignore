@@ -1,5 +1,8 @@
 # Stack build directory
-.stack-work
+.stack-work/
+
+# Testing area
+testing/
 
 # Sublime files
 *.sublime*

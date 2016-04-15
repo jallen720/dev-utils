@@ -1,4 +1,9 @@
-module DevUtils.Utils where
+module DevUtils.Utils
+   ( subString
+   , lastIndex
+   , get
+   , keys
+   , directify ) where
 
 
 import Data.Maybe (fromJust)
@@ -27,3 +32,12 @@ get key = fromJust . lookup key
 keys :: [(a, b)] -> [a]
 keys [] = []
 keys ((key, _):rest) = key : keys rest
+
+
+directify :: String -> String
+directify directory =
+   if isValidDirectory
+      then directory
+      else directory ++ "/"
+
+   where isValidDirectory = last directory == '/'
