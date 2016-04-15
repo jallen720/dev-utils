@@ -21,6 +21,7 @@ lastIndex item (currentItem:rest) =
    if shouldAddIndex
       then 1 + restIndex
       else 0
+
    where shouldAddIndex = item == currentItem || restIndex > 0
          restIndex = lastIndex item rest
 
