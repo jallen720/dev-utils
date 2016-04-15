@@ -45,11 +45,10 @@ buildMultiLineMsg title msgLines =
 
 confirmationPrompt :: String -> [String] -> (IO (), IO ()) -> IO ()
 confirmationPrompt title msgLines (yesAction, noAction) =
-   optionsPrompt title msgLines ["yes", "no"] >>= selectAction
-   where selectAction response =
-            if response == "yes"
-               then yesAction
-               else noAction
+   optionsPrompt title msgLines ["yes", "no"] >>= \response ->
+      if response == "yes"
+         then yesAction
+         else noAction
 
 
 inputPrompt :: String -> IO String
@@ -59,13 +58,12 @@ inputPrompt title = do
 
 
 nonEmptyInputPrompt :: String -> IO String
-nonEmptyInputPrompt title = inputPrompt title >>= checkInput
-   where checkInput input =
-            if input == ""
-               then retry
-               else return input
+nonEmptyInputPrompt title = inputPrompt title >>= \input ->
+   if input == ""
+      then retry
+      else return input
 
-         retry = do
+   where retry = do
             putStr . unlines $
                [ ""
                , "    " ++ show title ++ " can't be empty!"

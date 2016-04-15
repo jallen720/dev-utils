@@ -19,13 +19,12 @@ createFile path content = do
 
 validateFilesDontExist :: [String] -> IO ()
 validateFilesDontExist paths =
-   filterM doesFileExist paths >>= checkExistingFiles
-   where checkExistingFiles existingFiles =
-            if length existingFiles > 0
-               then error $ "\n" ++ (unlines . map errorMessage) existingFiles
-               else return ()
+   filterM doesFileExist paths >>= \existingFiles ->
+      if length existingFiles > 0
+         then error $ "\n" ++ (unlines . map errorMessage) existingFiles
+         else return ()
 
-         errorMessage = ("    file \"" ++) . (++ "\" already exists")
+      where errorMessage = ("    file \"" ++) . (++ "\" already exists")
 
 
 dirFromPath :: String -> String
