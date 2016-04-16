@@ -36,9 +36,9 @@ keys ((key, _):rest) = key : keys rest
 
 
 directify :: String -> String
-directify directory =
-   if isValidDirectory
-      then directory
-      else directory ++ "/"
+directify dir =
+   if isValidDir
+      then dir
+      else dir ++ "/"
 
-   where isValidDirectory = last directory == '/'
+   where isValidDir = last dir == '/'
