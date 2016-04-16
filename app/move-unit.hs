@@ -6,7 +6,8 @@ import DevUtils.Unit (unitFiles)
 import DevUtils.Utils (directify)
 
 import DevUtils.FileSystem
-   ( checkRemoveEmptySubdirs
+   ( FileMoveOp (..)
+   , checkRemoveEmptySubdirs
    , dirFromPath
    , moveFile )
 
@@ -46,21 +47,20 @@ validateArgs args =
 moveUnit :: UnitArgs -> IO ()
 moveUnit unitArgs = do
    let
-      moveUnitFile (fromFile, toFile) = moveFile fromFile toFile
-      uniqueFileSubdirs = nub . map fileSubdir
-      fileSubdir (fromFile, _) = dirFromPath fromFile
+      uniqueFileSubdirs = nub . map fromFileSubdir
+      fromFileSubdir (FileMoveOp fromFile _) = dirFromPath fromFile
 
-   files <- unitFileMoveMap unitArgs
-   mapM_ moveUnitFile files
+   unitFileMoveMap <- getUnitFileMoveMap unitArgs
+   mapM_ moveFile unitFileMoveMap
 
    -- Since there can be several unit files per subdir we need to get a unique
    -- list of subdirs from the files being moved so we don't try to remove the
    -- same empty subdir more than once.
-   mapM_ checkRemoveEmptySubdirs $ uniqueFileSubdirs files
+   mapM_ checkRemoveEmptySubdirs $ uniqueFileSubdirs unitFileMoveMap
 
 
-unitFileMoveMap :: UnitArgs -> IO [(String, String)]
-unitFileMoveMap (UnitArgs unitName fromSubdir toSubdir) = do
+getUnitFileMoveMap :: UnitArgs -> IO [FileMoveOp]
+getUnitFileMoveMap (UnitArgs unitName fromSubdir toSubdir) = do
    fromFiles <- unitFiles unitName fromSubdir
    let toFiles = map (replace fromSubdir toSubdir) fromFiles
-   return $ zip fromFiles toFiles
+   return $ zipWith FileMoveOp fromFiles toFiles

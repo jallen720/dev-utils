@@ -1,5 +1,6 @@
 module DevUtils.FileSystem
-   ( createFile
+   ( FileMoveOp (..)
+   , createFile
    , validateFilesDontExist
    , dirFromPath
    , checkRemoveEmptySubdirs
@@ -25,6 +26,12 @@ import DevUtils.Utils
    , directify )
 
 
+data FileMoveOp =
+   FileMoveOp
+      { fromFile :: String
+      , toFile   :: String }
+
+
 createFile :: String -> String -> IO ()
 createFile path content = do
    putStrLn $ "creating file " ++ show path
@@ -32,8 +39,8 @@ createFile path content = do
    writeFile path content
 
 
-moveFile :: String -> String -> IO ()
-moveFile fromFile toFile = do
+moveFile :: FileMoveOp -> IO ()
+moveFile (FileMoveOp fromFile toFile) = do
    putStrLn $ "moving \"" ++ fromFile ++ "\" -> \"" ++ toFile ++ "\""
    createDirectoryIfMissing True (dirFromPath toFile)
    renameFile fromFile toFile
