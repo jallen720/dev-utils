@@ -13,6 +13,7 @@ module DevUtils.Unit
 
 import System.Directory (doesFileExist)
 import Control.Monad (filterM)
+import Data.List (nub)
 import DevUtils.FileSystem (createFile, validateFilesDontExist)
 
 import DevUtils.Utils
@@ -70,8 +71,8 @@ unitFileData =
    ]
 
 
-unitFileRootDirs = map (get "rootDir" . snd) unitFileData
-unitFileExtensions = map (get "extension" . snd) unitFileData
+unitFileRootDirs = nub . map (directify . get "rootDir" . snd) $ unitFileData
+unitFileExtensions = nub . map (get "extension" . snd) $ unitFileData
 
 
 snippetGenerators =

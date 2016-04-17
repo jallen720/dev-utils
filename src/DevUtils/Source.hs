@@ -62,9 +62,8 @@ updateIncludes fileMoveOps =
 
 sourceFiles :: IO [String]
 sourceFiles =
-   mapM (recursiveFileList extensions) rootDirs >>= return . foldl1 (++)
-   where extensions = nub unitFileExtensions
-         rootDirs = nub unitFileRootDirs
+   mapM (recursiveFileList unitFileExtensions) unitFileRootDirs
+   >>= return . foldl1 (++)
 
 
 printFileChanges :: (String, [(String, String)]) -> IO ()
