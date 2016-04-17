@@ -3,7 +3,8 @@ module DevUtils.UI
    , confirmationPrompt
    , nonEmptyInputPrompt
    , runUI
-   , inputBlock ) where
+   , inputBlock
+   , emptyLine ) where
 
 
 import System.IO (hFlush, stdout)

@@ -3,7 +3,9 @@ module DevUtils.Utils
    , lastIndex
    , get
    , keys
-   , directify ) where
+   , directify
+   , extensionify
+   , quote ) where
 
 
 import Data.Maybe (fromJust)
@@ -42,3 +44,16 @@ directify dir =
       else dir ++ "/"
 
    where isValidDir = last dir == '/'
+
+
+extensionify :: String -> String
+extensionify extension =
+   if isValidExtension
+      then extension
+      else '.' : extension
+
+   where isValidExtension = head extension == '.'
+
+
+quote :: String -> String
+quote = ("\"" ++) . (++ "\"")

@@ -4,7 +4,8 @@ module DevUtils.FileSystem
    , validateFilesDontExist
    , dirFromPath
    , checkRemoveEmptySubdirs
-   , moveFile ) where
+   , moveFile
+   , recursiveFileList ) where
 
 
 import System.Directory
@@ -19,11 +20,13 @@ import System.IO (writeFile)
 import Data.List (intercalate)
 import Data.List.Split (endBy)
 import Control.Monad (filterM)
+import Control.Monad.Extra (partitionM)
 
 import DevUtils.Utils
    ( subString
    , lastIndex
-   , directify )
+   , directify
+   , extensionify )
 
 
 data FileMoveOp =
@@ -34,14 +37,14 @@ data FileMoveOp =
 
 createFile :: String -> String -> IO ()
 createFile path content = do
-   putStrLn $ "creating file " ++ show path
+   putStrLn $ "[CREATING] " ++ path
    createDirectoryIfMissing True (dirFromPath path)
    writeFile path content
 
 
 moveFile :: FileMoveOp -> IO ()
 moveFile (FileMoveOp fromFile toFile) = do
-   putStrLn $ "moving \"" ++ fromFile ++ "\" -> \"" ++ toFile ++ "\""
+   putStrLn $ "[MOVING] " ++ fromFile ++ " -> " ++ toFile
    createDirectoryIfMissing True (dirFromPath toFile)
    renameFile fromFile toFile
 
@@ -89,3 +92,34 @@ checkRemoveEmptySubdirs subdirPath =
             checkRemoveEmptySubdirs nextSubdirPath
 
          nextSubdirPath = intercalate "/" . init . endBy "/" $ subdirPath
+
+
+recursiveFileList :: [String] -> String -> IO [String]
+recursiveFileList extensions dir =
+   listDirectory validDir
+   >>= partitionM isFile . map (validDir ++)
+
+   >>= \(files, dirs) ->
+      if length dirs > 0
+         then
+            mapM (recursiveFileList extensions) dirs
+            >>= return . foldl (++) files
+
+         else return files
+
+   >>= return . filter hasValidFileExtension
+
+   where validDir = directify dir
+         hasValidFileExtension = (`elem` validExtensions) . fileExtension
+         validExtensions = map extensionify extensions
+
+
+fileExtension :: String -> String
+fileExtension path =
+   if '.' `elem` path
+      then ('.':) . reverse . takeWhile (/= '.') $ reverse path
+      else ""
+
+
+isFile :: String -> IO Bool
+isFile = doesFileExist

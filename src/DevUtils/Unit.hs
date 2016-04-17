@@ -3,6 +3,8 @@ module DevUtils.Unit
    , FileKey
    , Unit
    , unitFileData
+   , unitFileRootDirs
+   , unitFileExtensions
    , createUnit
    , createUnitFiles
    , unitFiles
@@ -66,6 +68,10 @@ unitFileData =
          , ("extension"   , ".cpp") ]
       )
    ]
+
+
+unitFileRootDirs = map (get "rootDir" . snd) unitFileData
+unitFileExtensions = map (get "extension" . snd) unitFileData
 
 
 snippetGenerators =
