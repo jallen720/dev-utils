@@ -1,20 +1,13 @@
 import System.Environment (getArgs)
-import Data.List (nub)
 import Data.String.Utils (replace)
-import Control.Monad (mapM, filterM)
-import DevUtils.Source (updateIncludes)
+import DevUtils.Source (moveSourceFiles)
 import DevUtils.Unit (unitFiles)
 import DevUtils.UI (emptyLine)
-
-import DevUtils.FileSystem
-   ( FileMoveOp (..)
-   , checkRemoveEmptySubdirs
-   , dirFromPath
-   , moveFile )
+import DevUtils.FileSystem (FileMoveOp (..), createFileMoveOps)
 
 
-data UnitMoveArgs =
-   UnitMoveArgs
+data MoveUnitArgs =
+   MoveUnitArgs
       { unitName   :: String
       , fromSubdir :: String
       , toSubdir   :: String }
@@ -23,16 +16,16 @@ data UnitMoveArgs =
 main :: IO ()
 main = do
    emptyLine
-   getUnitArgs >>= moveUnit
+   getMoveUnitArgs >>= moveUnit
    emptyLine
 
 
-getUnitArgs :: IO UnitMoveArgs
-getUnitArgs = do
+getMoveUnitArgs :: IO MoveUnitArgs
+getMoveUnitArgs = do
    args <- getArgs
    validateArgs args
    return
-      UnitMoveArgs
+      MoveUnitArgs
          { unitName   = args !! 0
          , fromSubdir = args !! 1
          , toSubdir   = args !! 2 }
@@ -47,24 +40,12 @@ validateArgs args =
    where isValidArgCount = length args == 3
 
 
-moveUnit :: UnitMoveArgs -> IO ()
-moveUnit unitMoveArgs = do
-   let
-      uniqueSubdirs = nub . map fromFileSubdir
-      fromFileSubdir (FileMoveOp fromFile _) = dirFromPath fromFile
-
-   unitMoveMap <- getUnitMoveMap unitMoveArgs
-   updateIncludes unitMoveMap
-   mapM_ moveFile unitMoveMap
-
-   -- Since there can be several unit files per subdir we need to get a unique
-   -- list of subdirs from the files being moved so we don't try to remove the
-   -- same empty subdir more than once.
-   mapM_ checkRemoveEmptySubdirs $ uniqueSubdirs unitMoveMap
+moveUnit :: MoveUnitArgs -> IO ()
+moveUnit moveUnitArgs = getUnitFileMoveOps moveUnitArgs >>= moveSourceFiles
 
 
-getUnitMoveMap :: UnitMoveArgs -> IO [FileMoveOp]
-getUnitMoveMap (UnitMoveArgs unitName fromSubdir toSubdir) = do
+getUnitFileMoveOps :: MoveUnitArgs -> IO [FileMoveOp]
+getUnitFileMoveOps (MoveUnitArgs unitName fromSubdir toSubdir) = do
    fromFiles <- unitFiles unitName fromSubdir
    let toFiles = map (replace fromSubdir toSubdir) fromFiles
-   return $ zipWith FileMoveOp fromFiles toFiles
+   return $ createFileMoveOps fromFiles toFiles

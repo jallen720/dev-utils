@@ -5,7 +5,8 @@ module DevUtils.FileSystem
    , dirFromPath
    , checkRemoveEmptySubdirs
    , moveFile
-   , recursiveFileList ) where
+   , recursiveFileList
+   , createFileMoveOps ) where
 
 
 import System.Directory
@@ -123,3 +124,7 @@ fileExtension path =
 
 isFile :: String -> IO Bool
 isFile = doesFileExist
+
+
+createFileMoveOps :: ([String] -> [String] -> [FileMoveOp])
+createFileMoveOps = zipWith FileMoveOp

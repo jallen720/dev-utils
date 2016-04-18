@@ -1,4 +1,4 @@
-module DevUtils.Source (updateIncludes) where
+module DevUtils.Source (moveSourceFiles) where
 
 
 import qualified System.IO.Strict as Strict (readFile)
@@ -13,7 +13,28 @@ import Control.Monad (mapM)
 import DevUtils.UI (emptyLine)
 import DevUtils.Utils (quote)
 import DevUtils.Unit (unitFileRootDirs, unitFileExtensions)
-import DevUtils.FileSystem (FileMoveOp (..), recursiveFileList)
+
+import DevUtils.FileSystem
+   ( FileMoveOp (..)
+   , checkRemoveEmptySubdirs
+   , dirFromPath
+   , moveFile
+   , recursiveFileList )
+
+
+moveSourceFiles :: [FileMoveOp] -> IO ()
+moveSourceFiles fileMoveOps = do
+   let
+      uniqueSubdirs = nub . map fromFileSubdir
+      fromFileSubdir (FileMoveOp fromFile _) = dirFromPath fromFile
+
+   updateIncludes fileMoveOps
+   mapM_ moveFile fileMoveOps
+
+   -- Since there can be several unit files per subdir we need to get a unique
+   -- list of subdirs from the files being moved so we don't try to remove the
+   -- same empty subdir more than once.
+   mapM_ checkRemoveEmptySubdirs $ uniqueSubdirs fileMoveOps
 
 
 updateIncludes :: [FileMoveOp] -> IO ()
