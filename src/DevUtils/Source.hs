@@ -9,7 +9,6 @@ import Data.List
    , isInfixOf )
 
 import Data.String.Utils (replace)
-import Control.Monad (mapM)
 import DevUtils.UI (emptyLine)
 import DevUtils.Utils (quote)
 import DevUtils.Unit (unitFileRootDirs, unitFileExtensions)
