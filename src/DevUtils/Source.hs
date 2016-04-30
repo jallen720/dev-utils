@@ -44,7 +44,7 @@ updateIncludes fileMoveOps =
             printFileChanges changes
 
             Strict.readFile sourceFile
-            >>= writeFile sourceFile . updateOp includeDiffs
+               >>= writeFile sourceFile . updateOp includeDiffs
 
          updateOp = foldl buildUpdateOp id
 
@@ -53,8 +53,8 @@ updateIncludes fileMoveOps =
 
          sourceFileChanges =
             sourceFiles
-            >>= mapM findIncludeDiffs
-            >>= return . filter hasIncludeDiffs
+               >>= mapM findIncludeDiffs
+               >>= return . filter hasIncludeDiffs
 
          hasIncludeDiffs = (>0) . length . snd
 
@@ -83,7 +83,7 @@ updateIncludes fileMoveOps =
 sourceFiles :: IO [String]
 sourceFiles =
    mapM (recursiveFileList unitFileExtensions) unitFileRootDirs
-   >>= return . foldl1 (++)
+      >>= return . foldl1 (++)
 
 
 printFileChanges :: (String, [(String, String)]) -> IO ()

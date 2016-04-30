@@ -98,17 +98,17 @@ checkRemoveEmptySubdirs subdirPath =
 recursiveFileList :: [String] -> String -> IO [String]
 recursiveFileList extensions dir =
    listDirectory validDir
-   >>= partitionM isFile . map (validDir ++)
+      >>= partitionM isFile . map (validDir ++)
 
-   >>= \(files, dirs) ->
-      if length dirs > 0
-         then
-            mapM (recursiveFileList extensions) dirs
-            >>= return . foldl (++) files
+      >>= \(files, dirs) ->
+         if length dirs > 0
+            then
+               mapM (recursiveFileList extensions) dirs
+                  >>= return . foldl (++) files
 
-         else return files
+            else return files
 
-   >>= return . filter hasValidFileExtension
+      >>= return . filter hasValidFileExtension
 
    where validDir = directify dir
          hasValidFileExtension = (`elem` validExtensions) . fileExtension

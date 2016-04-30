@@ -133,12 +133,13 @@ headerSnippet unit =
    unlines
       [ "#pragma once"
       , ""
+      , ""
       , emptyNamespaceSnippet unit ]
 
 
 templateHeaderSnippet :: Unit -> String
 templateHeaderSnippet unit = headerSnippet unit ++ templateInclude
-   where templateInclude = "\n" ++ unitInclude unit templateImplPath ++ "\n"
+   where templateInclude = "\n\n" ++ unitInclude unit templateImplPath ++ "\n"
 
 
 templateImplSnippet :: Unit -> String
@@ -150,6 +151,7 @@ sourceSnippet unit =
    unlines
       [ unitInclude unit headerPath
       , ""
+      , ""
       , emptyNamespaceSnippet unit ]
 
 
@@ -159,6 +161,7 @@ testSourceSnippet unit =
       [ unitInclude unit headerPath
       , ""
       , "#include <gtest/gtest.h>"
+      , ""
       , ""
       , namespaceSnippet testSnippet unit ]
 
@@ -176,7 +179,9 @@ namespaceSnippet :: String -> Unit -> String
 namespaceSnippet content (Unit _ namespace _) =
    "namespace " ++ namespace ++ " {\n" ++
    "\n" ++
+   "\n" ++
    content ++ "\n" ++
+   "\n" ++
    "\n" ++
    "} // namespace " ++ namespace
 
