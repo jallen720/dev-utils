@@ -8,17 +8,17 @@ import Data.List
    , isPrefixOf
    , isInfixOf )
 
-import Data.String.Utils (replace)
-import DevUtils.UI (emptyLine)
 import DevUtils.Utils (quote)
 import DevUtils.Unit (unitFileRootDirs, unitFileExtensions)
 
 import DevUtils.FileSystem
    ( FileMoveOp (..)
+   , ReplaceOp (..)
    , checkRemoveEmptySubdirs
    , dirFromPath
    , moveFile
-   , recursiveFileList )
+   , recursiveFileList
+   , replaceInFile )
 
 
 moveSourceFiles :: [FileMoveOp] -> IO ()
@@ -38,42 +38,35 @@ moveSourceFiles fileMoveOps = do
 
 updateIncludes :: [FileMoveOp] -> IO ()
 updateIncludes fileMoveOps =
-   sourceFileChanges >>= mapM_ applyChanges
+   sourceFileReplaceOps >>= mapM_ applyIncludeReplaceOps
 
-   where applyChanges changes@(sourceFile, includeDiffs) = do
-            printFileChanges changes
+   where applyIncludeReplaceOps (sourceFile, replaceOps) =
+            replaceInFile sourceFile replaceOps
 
-            Strict.readFile sourceFile
-               >>= writeFile sourceFile . updateOp includeDiffs
-
-         updateOp = foldl buildUpdateOp id
-
-         buildUpdateOp updateOps (fromInclude, toInclude) =
-            updateOps . replace fromInclude toInclude
-
-         sourceFileChanges =
+         sourceFileReplaceOps =
             sourceFiles
-               >>= mapM findIncludeDiffs
-               >>= return . filter hasIncludeDiffs
+               >>= mapM findIncludeReplaceOps
+               >>= return . filter hasIncludeReplaceOps
 
-         hasIncludeDiffs = (>0) . length . snd
+         hasIncludeReplaceOps = (>0) . length . snd
 
-         findIncludeDiffs sourceFile =
-            Strict.readFile sourceFile >>= return . assignIncludeDiff sourceFile
+         findIncludeReplaceOps sourceFile =
+            Strict.readFile sourceFile
+               >>= return . assignIncludeReplaceOp sourceFile
 
-         assignIncludeDiff sourceFile source =
+         assignIncludeReplaceOp sourceFile source =
             (sourceFile, filter (isInSource source) includesToCheckFor)
 
-         isInSource source (include, _) = isInfixOf include source
+         isInSource source (ReplaceOp fromInclude _) =
+            isInfixOf fromInclude source
 
-         includesToCheckFor
-            = map includeDirectiveDiff
-            . filter isIncludeFile
-            $ fileMoveOps
+         includesToCheckFor =
+            map getIncludeReplaceOp . filter isIncludeFile $ fileMoveOps
 
-         includeDirectiveDiff (FileMoveOp fromFile toFile) =
-            ( includeDirective fromFile
-            , includeDirective toFile )
+         getIncludeReplaceOp (FileMoveOp fromInclude toInclude) =
+            ReplaceOp
+               (includeDirective fromInclude)
+               (includeDirective toInclude)
 
          includeDirective = ("#include " ++) . quote . includePath
          includePath = drop $ length "include/"
@@ -84,15 +77,3 @@ sourceFiles :: IO [String]
 sourceFiles =
    mapM (recursiveFileList unitFileExtensions) unitFileRootDirs
       >>= return . foldl1 (++)
-
-
-printFileChanges :: (String, [(String, String)]) -> IO ()
-printFileChanges (sourceFile, includeDiffs) = do
-   putStrLn $ "[UPDATING] " ++ sourceFile ++ ":"
-   mapM_ printIncludeDiff includeDiffs
-   emptyLine
-
-
-printIncludeDiff :: (String, String) -> IO ()
-printIncludeDiff (fromInclude, toInclude) =
-   putStrLn $ "    " ++ fromInclude ++ " -> " ++ toInclude

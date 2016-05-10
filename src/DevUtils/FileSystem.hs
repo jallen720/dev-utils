@@ -1,12 +1,14 @@
 module DevUtils.FileSystem
    ( FileMoveOp (..)
+   , ReplaceOp (..)
    , createFile
    , validateFilesDontExist
    , dirFromPath
    , checkRemoveEmptySubdirs
    , moveFile
    , recursiveFileList
-   , createFileMoveOps ) where
+   , createFileMoveOps
+   , replaceInFile ) where
 
 
 import System.Directory
@@ -17,9 +19,11 @@ import System.Directory
    , removeDirectory
    , renameFile )
 
+import qualified System.IO.Strict as Strict (readFile)
 import System.IO (writeFile)
 import Data.List (intercalate)
 import Data.List.Split (endBy)
+import Data.String.Utils (replace)
 import Control.Monad (filterM)
 import Control.Monad.Extra (partitionM)
 
@@ -29,11 +33,19 @@ import DevUtils.Utils
    , directify
    , extensionify )
 
+import DevUtils.UI (emptyLine)
+
 
 data FileMoveOp =
    FileMoveOp
       { fromFile :: String
       , toFile   :: String }
+
+
+data ReplaceOp =
+   ReplaceOp
+      { fromString :: String
+      , toString   :: String }
 
 
 createFile :: String -> String -> IO ()
@@ -128,3 +140,29 @@ isFile = doesFileExist
 
 createFileMoveOps :: ([String] -> [String] -> [FileMoveOp])
 createFileMoveOps = zipWith FileMoveOp
+
+
+replaceInFile :: String -> [ReplaceOp] -> IO ()
+replaceInFile filePath replaceOps = do
+   let
+      getReplaceOpChain = foldl linkReplaceOp id
+
+      linkReplaceOp replaceOpChain (ReplaceOp fromString toString) =
+         replaceOpChain . replace fromString toString
+
+   printFileReplaceOps filePath replaceOps
+
+   Strict.readFile filePath
+      >>= writeFile filePath . getReplaceOpChain replaceOps
+
+
+printFileReplaceOps :: String -> [ReplaceOp] -> IO ()
+printFileReplaceOps filePath replaceOps = do
+   putStrLn $ "[UPDATING] " ++ filePath ++ ":"
+   mapM_ printReplaceOp replaceOps
+   emptyLine
+
+
+printReplaceOp :: ReplaceOp -> IO ()
+printReplaceOp (ReplaceOp fromString toString) =
+   putStrLn $ "    " ++ fromString ++ " -> " ++ toString
