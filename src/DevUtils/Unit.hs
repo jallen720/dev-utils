@@ -15,11 +15,14 @@ import System.Directory (doesFileExist)
 import Control.Monad (filterM)
 import Data.List (nub)
 import DevUtils.FileSystem (createFile, validateFilesDontExist)
+import DevUtils.Template (getTemplate)
 
 import DevUtils.Utils
-   ( get
+   ( ReplaceOp (..)
+   , get
    , keys
-   , directify )
+   , directify
+   , extensionify )
 
 
 type Name      = String
@@ -75,10 +78,10 @@ unitFileRootDirs = nub . map (directify . get "rootDir" . snd) $ unitFileData
 unitFileExtensions = nub . map (get "extension" . snd) $ unitFileData
 
 
-snippetGenerators =
-   [ (templateImplFileKey , templateImplSnippet)
-   , ('s'                 , sourceSnippet)
-   , ('t'                 , testSourceSnippet) ]
+snippetGetters =
+   [ (templateImplFileKey , getTemplateImplSnippet)
+   , ('s'                 , getSourceSnippet)
+   , ('t'                 , getTestSourceSnippet) ]
 
 
 createUnit :: UnitInput -> Unit
@@ -92,19 +95,19 @@ createUnitFiles unit fileKeys = do
 
 
 createUnitFile :: Unit -> [FileKey] -> FileKey -> IO ()
-createUnitFile unit fileKeys fileKey = createFile unitFile content
+createUnitFile unit fileKeys fileKey = getContent >>= createFile unitFile
    where unitFile = associatedFile unit fileKey
-         content = snippetGenerator unit
+         getContent = snippetGetter unit
 
-         snippetGenerator =
+         snippetGetter =
             if fileKey == 'h'
-               then headerSnippetGenerator
-               else get fileKey snippetGenerators
+               then headerSnippetGetter
+               else get fileKey snippetGetters
 
-         headerSnippetGenerator =
+         headerSnippetGetter =
             if 'i' `elem` fileKeys
-               then templateHeaderSnippet
-               else headerSnippet
+               then getTemplateHeaderSnippet
+               else getHeaderSnippet
 
 
 unitFiles :: Name -> Subdir -> IO [String]
@@ -128,66 +131,62 @@ associatedFile (Unit name _ subdir) fileKey =
             get "extension" unitFileData
 
 
-headerSnippet :: Unit -> String
-headerSnippet unit =
-   unlines
-      [ "#pragma once"
-      , ""
-      , ""
-      , emptyNamespaceSnippet unit ]
+getHeaderSnippet :: Unit -> IO String
+getHeaderSnippet unit =
+   emptyNamespaceSnippet unit >>= \content ->
+      getTemplate "header" [ ReplaceOp "CONTENT" content ]
 
 
-templateHeaderSnippet :: Unit -> String
-templateHeaderSnippet unit = headerSnippet unit ++ templateInclude
-   where templateInclude = "\n\n" ++ unitInclude unit templateImplPath ++ "\n"
+getTemplateHeaderSnippet :: Unit -> IO String
+getTemplateHeaderSnippet unit =
+   getHeaderSnippet unit >>= \headerSnippet ->
+      getTemplateIncludeSnippet >>= \templateIncludeSnippet ->
+         return $ headerSnippet ++ templateIncludeSnippet
+
+   where getTemplateIncludeSnippet =
+            getTemplate "templateInclude"
+               [ ReplaceOp "TEMPLATE_INCLUDE" templateInclude ]
+
+         templateInclude = unitInclude unit templateImplPath
 
 
-templateImplSnippet :: Unit -> String
-templateImplSnippet unit = emptyNamespaceSnippet unit ++ "\n"
+getTemplateImplSnippet :: Unit -> IO String
+getTemplateImplSnippet unit =
+   emptyNamespaceSnippet unit >>= addTrailingNewline
 
 
-sourceSnippet :: Unit -> String
-sourceSnippet unit =
-   unlines
-      [ unitInclude unit headerPath
-      , ""
-      , ""
-      , emptyNamespaceSnippet unit ]
+getSourceSnippet :: Unit -> IO String
+getSourceSnippet unit =
+   emptyNamespaceSnippet unit >>= \content ->
+      getTemplate "source" $ getSourceReplaceOps unit content
 
 
-testSourceSnippet :: Unit -> String
-testSourceSnippet unit =
-   unlines
-      [ unitInclude unit headerPath
-      , ""
-      , "#include <gtest/gtest.h>"
-      , ""
-      , ""
-      , namespaceSnippet testSnippet unit ]
-
-   where testSnippet =
-            "TEST(" ++ name unit ++ "Test, test) {\n" ++
-            "\n" ++
-            "}"
+getTestSourceSnippet :: Unit -> IO String
+getTestSourceSnippet unit =
+   getTestSnippet unit >>= \testSnippet ->
+      getNamespaceSnippet testSnippet unit >>= \content ->
+         getTemplate "testSource" $ getSourceReplaceOps unit content
 
 
-emptyNamespaceSnippet :: (Unit -> String)
-emptyNamespaceSnippet = namespaceSnippet ""
+getTestSnippet :: Unit -> IO String
+getTestSnippet (Unit name _ _) =
+   getTemplate "test" [ ReplaceOp "NAME" name ] >>= stripTrailingNewline
 
 
-namespaceSnippet :: String -> Unit -> String
-namespaceSnippet content (Unit _ namespace _) =
-   "namespace " ++ namespace ++ " {\n" ++
-   "\n" ++
-   "\n" ++
-   content ++ "\n" ++
-   "\n" ++
-   "\n" ++
-   "} // namespace " ++ namespace
+emptyNamespaceSnippet :: (Unit -> IO String)
+emptyNamespaceSnippet = getNamespaceSnippet ""
+
+
+getNamespaceSnippet :: String -> Unit -> IO String
+getNamespaceSnippet content (Unit _ namespace _) =
+   getTemplate "namespace"
+      [ ReplaceOp "NAMESPACE" namespace
+      , ReplaceOp "CONTENT" content ]
+      >>= stripTrailingNewline
 
 
 unitInclude :: Unit -> (Unit -> String) -> String
-unitInclude unit path = "#include \"" ++ path unit ++ "\""
+unitInclude unit pathGetter = "#include \"" ++ pathGetter unit ++ "\""
 
 
 headerPath :: Unit -> String
@@ -200,4 +199,20 @@ templateImplPath = includePath templateImplExtension
 
 includePath :: String -> Unit -> String
 includePath extension (Unit name _ subdir) =
-   subdir ++ name ++ extension
+   validSubdir ++ name ++ validExtension
+   where validSubdir = directify subdir
+         validExtension = extensionify extension
+
+
+getSourceReplaceOps :: Unit -> String -> [ReplaceOp]
+getSourceReplaceOps unit content =
+   [ ReplaceOp "HEADER_INCLUDE" $ unitInclude unit headerPath
+   , ReplaceOp "CONTENT" content ]
+
+
+addTrailingNewline :: (String -> IO String)
+addTrailingNewline = return . (++ "\n")
+
+
+stripTrailingNewline :: (String -> IO String)
+stripTrailingNewline = return . init

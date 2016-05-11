@@ -8,12 +8,11 @@ import Data.List
    , isPrefixOf
    , isInfixOf )
 
-import DevUtils.Utils (quote)
+import DevUtils.Utils (ReplaceOp (..), quote)
 import DevUtils.Unit (unitFileRootDirs, unitFileExtensions)
 
 import DevUtils.FileSystem
    ( FileMoveOp (..)
-   , ReplaceOp (..)
    , checkRemoveEmptySubdirs
    , dirFromPath
    , moveFile

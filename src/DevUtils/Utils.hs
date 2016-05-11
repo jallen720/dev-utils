@@ -1,14 +1,23 @@
 module DevUtils.Utils
-   ( subString
+   ( ReplaceOp (..)
+   , subString
    , lastIndex
    , get
    , keys
    , directify
    , extensionify
-   , quote ) where
+   , quote
+   , getReplaceOpChain ) where
 
 
 import Data.Maybe (fromJust)
+import Data.String.Utils (replace)
+
+
+data ReplaceOp =
+   ReplaceOp
+      { fromString :: String
+      , toString   :: String }
 
 
 subString :: Int -> String -> String
@@ -57,3 +66,9 @@ extensionify extension =
 
 quote :: String -> String
 quote = ("\"" ++) . (++ "\"")
+
+
+getReplaceOpChain :: [ReplaceOp] -> (String -> String)
+getReplaceOpChain = foldl linkReplaceOp id
+   where linkReplaceOp replaceOpChain (ReplaceOp fromString toString) =
+            replaceOpChain . replace fromString toString

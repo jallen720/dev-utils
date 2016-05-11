@@ -1,0 +1,6 @@
+[[ HEADER_INCLUDE ]]
+
+#include <gtest/gtest.h>
+
+
+[[ CONTENT ]]

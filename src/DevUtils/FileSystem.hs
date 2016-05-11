@@ -1,6 +1,5 @@
 module DevUtils.FileSystem
    ( FileMoveOp (..)
-   , ReplaceOp (..)
    , createFile
    , validateFilesDontExist
    , dirFromPath
@@ -23,15 +22,16 @@ import qualified System.IO.Strict as Strict (readFile)
 import System.IO (writeFile)
 import Data.List (intercalate)
 import Data.List.Split (endBy)
-import Data.String.Utils (replace)
 import Control.Monad (filterM)
 import Control.Monad.Extra (partitionM)
 
 import DevUtils.Utils
-   ( subString
+   ( ReplaceOp (..)
+   , subString
    , lastIndex
    , directify
-   , extensionify )
+   , extensionify
+   , getReplaceOpChain )
 
 import DevUtils.UI (emptyLine)
 
@@ -40,12 +40,6 @@ data FileMoveOp =
    FileMoveOp
       { fromFile :: String
       , toFile   :: String }
-
-
-data ReplaceOp =
-   ReplaceOp
-      { fromString :: String
-      , toString   :: String }
 
 
 createFile :: String -> String -> IO ()
@@ -120,9 +114,15 @@ recursiveFileList extensions dir =
 
             else return files
 
-      >>= return . filter hasValidFileExtension
+      >>= return . validFiles
 
    where validDir = directify dir
+
+         validFiles files =
+            if length validExtensions == 0
+               then files
+               else filter hasValidFileExtension files
+
          hasValidFileExtension = (`elem` validExtensions) . fileExtension
          validExtensions = map extensionify extensions
 
@@ -144,12 +144,6 @@ createFileMoveOps = zipWith FileMoveOp
 
 replaceInFile :: String -> [ReplaceOp] -> IO ()
 replaceInFile filePath replaceOps = do
-   let
-      getReplaceOpChain = foldl linkReplaceOp id
-
-      linkReplaceOp replaceOpChain (ReplaceOp fromString toString) =
-         replaceOpChain . replace fromString toString
-
    printFileReplaceOps filePath replaceOps
 
    Strict.readFile filePath
