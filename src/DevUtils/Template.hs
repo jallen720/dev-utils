@@ -12,7 +12,8 @@ import DevUtils.Utils
 
 
 getTemplatesDir :: IO String
-getTemplatesDir = getEnv "PROJECTS" >>= return . (++ "/dev-utils/templates/")
+getTemplatesDir =
+   getEnv "PROJECTS" >>= return . (++ "/dev-utils/resources/templates/")
 
 
 getTemplateFiles :: IO [String]
