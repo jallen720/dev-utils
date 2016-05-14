@@ -17,20 +17,20 @@ library
     default-language : Haskell2010
     hs-source-dirs   : src
 
-    exposed-modules  : DevUtils.UI
-                     , DevUtils.Unit
-                     , DevUtils.Utils
-                     , DevUtils.FileSystem
-                     , DevUtils.Source
-                     , DevUtils.Template
-                     , DevUtils.Console
+    exposed-modules : DevUtils.UI
+                    , DevUtils.Unit
+                    , DevUtils.Utils
+                    , DevUtils.FileSystem
+                    , DevUtils.Source
+                    , DevUtils.Template
+                    , DevUtils.Console
 
-    build-depends    : base >= 4.7 && < 5
-                     , directory
-                     , split
-                     , extra
-                     , MissingH
-                     , strict
+    build-depends : base >= 4.7 && < 5
+                  , directory
+                  , split
+                  , extra
+                  , MissingH
+                  , strict
 
 
 executable add-unit
@@ -39,8 +39,8 @@ executable add-unit
     main-is          : add-unit.hs
     ghc-options      : -threaded -rtsopts -with-rtsopts=-N
 
-    build-depends    : base
-                     , dev-utils
+    build-depends : base
+                  , dev-utils
 
 
 executable move-unit
@@ -49,9 +49,9 @@ executable move-unit
     main-is          : move-unit.hs
     ghc-options      : -threaded -rtsopts -with-rtsopts=-N
 
-    build-depends    : base
-                     , dev-utils
-                     , MissingH
+    build-depends : base
+                  , dev-utils
+                  , MissingH
 
 
 executable rename-subdir
@@ -60,10 +60,10 @@ executable rename-subdir
     main-is          : rename-subdir.hs
     ghc-options      : -threaded -rtsopts -with-rtsopts=-N
 
-    build-depends    : base
-                     , dev-utils
-                     , directory
-                     , MissingH
+    build-depends : base
+                  , dev-utils
+                  , directory
+                  , MissingH
 
 
 executable rename-unit
@@ -72,10 +72,10 @@ executable rename-unit
     main-is          : rename-subdir.hs
     ghc-options      : -threaded -rtsopts -with-rtsopts=-N
 
-    build-depends    : base
-                     , dev-utils
-                     , directory
-                     , MissingH
+    build-depends : base
+                  , dev-utils
+                  , directory
+                  , MissingH
 
 
 test-suite dev-utils-test
@@ -85,8 +85,8 @@ test-suite dev-utils-test
     ghc-options      : -threaded -rtsopts -with-rtsopts=-N
     type             : exitcode-stdio-1.0
 
-    build-depends    : base
-                     , dev-utils
+    build-depends : base
+                  , dev-utils
 
 
 source-repository head
