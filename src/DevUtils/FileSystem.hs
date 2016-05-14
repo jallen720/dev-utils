@@ -7,7 +7,8 @@ module DevUtils.FileSystem
    , moveFile
    , recursiveFileList
    , createFileMoveOps
-   , replaceInFile ) where
+   , replaceInFile
+   , fileExtension ) where
 
 
 import System.Directory
