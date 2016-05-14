@@ -14,7 +14,6 @@ include("${CMAKE_PATH}/macros/add_lib_tests.cmake")
 configure_project()
 
 # Library
-module_dependency_versioned("SFML" "2.3.2" "system" "window" "graphics" "network" "audio")
 module_dependency("JCore")
 add_lib(SHARED)
 
