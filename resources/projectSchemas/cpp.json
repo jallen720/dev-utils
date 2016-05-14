@@ -9,20 +9,29 @@
         "testSrc" : "[[ PROJECT_DIR_NAME ]]/tests/src/[[ PROJECT_NAME ]]/"
     },
 
-    "files" : {
-        "CMakeLists.txt" : {
+    "files" : [
+        {
+            "name"     : "CMakeLists.txt",
             "template" : "CMakeLists.txt",
             "dir"      : "root"
         },
 
-        ".gitignore" : {
+        {
+            "name"     : ".gitignore",
             "template" : "GitIgnoreTemplate",
             "dir"      : "root"
         },
 
-        "main.cpp" : {
+        {
+            "name"     : "main.cpp",
             "template" : "main.cpp",
             "dir"      : "src"
+        },
+
+        {
+            "name"     : "main.cpp",
+            "template" : "testsMain.cpp",
+            "dir"      : "testSrc"
         }
-    }
+    ]
 }

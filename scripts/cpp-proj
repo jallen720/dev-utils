@@ -57,11 +57,9 @@ def makeProjectFile(projectFilePath, content):
 
 
 def makeProjectFiles(projectFiles, projectDirs, projectDirName, projectName):
-    for fileName, fileData in projectFiles.items():
-        projectFile = projectFiles[fileName]
-
+    for projectFile in projectFiles:
         makeProjectFile(
-            projectFilePath = projectDirs[projectFile["dir"]] + fileName,
+            projectFilePath = projectDirs[projectFile["dir"]] + projectFile["name"],
             content = getTemplate(projectFile["template"], projectDirName, projectName))
 
 

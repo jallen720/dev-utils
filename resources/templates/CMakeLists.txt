@@ -6,17 +6,17 @@ set(CMAKE_PATH "$ENV{CMAKE_PATH}")
 # Utilities
 include("${CMAKE_PATH}/macros/configure_project.cmake")
 include("${CMAKE_PATH}/macros/module_dependency.cmake")
-include("${CMAKE_PATH}/macros/add_lib.cmake")
+include("${CMAKE_PATH}/macros/add_bin.cmake")
 include("${CMAKE_PATH}/macros/test_module_dependency.cmake")
-include("${CMAKE_PATH}/macros/add_lib_tests.cmake")
+include("${CMAKE_PATH}/macros/add_bin_tests.cmake")
 
 # Configuration
 configure_project()
 
 # Library
 module_dependency("JCore")
-add_lib(SHARED)
+add_bin()
 
 # Tests
 test_module_dependency("GoogleTest")
-add_lib_tests()
+add_bin_tests()
