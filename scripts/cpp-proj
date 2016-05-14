@@ -1,0 +1,91 @@
+#!/usr/bin/env python3.4
+
+
+from os import environ, path, makedirs
+from json import loads
+
+
+PROJECTS_DIR         = environ["PROJECTS"]
+PROJECT_SCHEMAS_DIR  = PROJECTS_DIR + "/dev-utils/resources/projectSchemas/"
+TEMPLATES_DIR        = PROJECTS_DIR + "/dev-utils/resources/templates/"
+PROJECT_DIR_NAME_KEY = "[[ PROJECT_DIR_NAME ]]"
+PROJECT_NAME_KEY     = "[[ PROJECT_NAME ]]"
+
+
+def setDirs(projectDirs, projectDirName, projectName):
+    for dirName, dirPath in projectDirs.items():
+        projectDirs[dirName] = (
+            dirPath
+                .replace(PROJECT_DIR_NAME_KEY, projectDirName)
+                .replace(PROJECT_NAME_KEY, projectName))
+
+
+def validateProjectDirsDontExist(projectDirs):
+    for projectDir in projectDirs:
+        if path.exists(projectDir):
+            raise Exception("project dir \"" + projectDir + "\" already exists")
+
+
+def logProjectDirs(projectDirs):
+    print("making dirs:")
+
+    for projectDir in projectDirs:
+        print("    " + projectDir)
+
+
+def makeProjectDirs(projectDirs):
+    validateProjectDirsDontExist(projectDirs)
+    logProjectDirs(projectDirs)
+
+    for projectDir in projectDirs:
+        makedirs(projectDir)
+
+
+def getTemplate(templatePath, projectDirName, projectName):
+    with open(TEMPLATES_DIR + templatePath, "r") as templateFile:
+        return (templateFile
+            .read()
+            .replace(PROJECT_DIR_NAME_KEY, projectDirName)
+            .replace(PROJECT_NAME_KEY, projectName))
+
+
+def makeProjectFile(projectFilePath, content):
+    print("making file " + projectFilePath)
+
+    with open(projectFilePath, "w") as projectFile:
+        projectFile.write(content)
+
+
+def makeProjectFiles(projectFiles, projectDirs, projectDirName, projectName):
+    for fileName, fileData in projectFiles.items():
+        projectFile = projectFiles[fileName]
+
+        makeProjectFile(
+            projectFilePath = projectDirs[projectFile["dir"]] + fileName,
+            content = getTemplate(projectFile["template"], projectDirName, projectName))
+
+
+def getProjectDirsToMake(projectDirs):
+    return list(filter(
+        (lambda projectDir: projectDir != projectDirs["root"]),
+        projectDirs.values()))
+
+
+def createProject(projectDirName, projectName):
+    with open(PROJECT_SCHEMAS_DIR + "cpp.json", "r") as projectSchema:
+        projectSchemaData = loads(projectSchema.read())
+        projectDirs = projectSchemaData["dirs"]
+        setDirs(projectDirs, projectDirName, projectName)
+        makeProjectDirs(getProjectDirsToMake(projectDirs))
+
+        makeProjectFiles(
+            projectSchemaData["files"],
+            projectDirs,
+            projectDirName,
+            projectName)
+
+
+if __name__ == "__main__":
+    createProject(
+        input("project directory name: "),
+        input("project name: "))

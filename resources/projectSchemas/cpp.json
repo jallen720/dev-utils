@@ -1,0 +1,25 @@
+{
+    "dirs" : {
+        "root"    : "[[ PROJECT_DIR_NAME ]]/",
+        "include" : "[[ PROJECT_DIR_NAME ]]/include/[[ PROJECT_NAME ]]/",
+        "src"     : "[[ PROJECT_DIR_NAME ]]/src/[[ PROJECT_NAME ]]/",
+        "testSrc" : "[[ PROJECT_DIR_NAME ]]/tests/src/[[ PROJECT_NAME ]]/"
+    },
+
+    "files" : {
+        "CMakeLists.txt" : {
+            "template" : "CMakeLists.txt",
+            "dir"      : "root"
+        },
+
+        ".gitignore" : {
+            "template" : "GitIgnoreTemplate",
+            "dir"      : "root"
+        },
+
+        "main.cpp" : {
+            "template" : "main.cpp",
+            "dir"      : "src"
+        }
+    }
+}
