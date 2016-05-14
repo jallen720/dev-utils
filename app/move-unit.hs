@@ -4,6 +4,7 @@ import DevUtils.Source (moveSourceFiles)
 import DevUtils.Unit (unitFiles)
 import DevUtils.UI (emptyLine)
 import DevUtils.FileSystem (FileMoveOp (..), createFileMoveOps)
+import DevUtils.Console (validateArgs)
 
 
 data MoveUnitArgs =
@@ -23,21 +24,13 @@ main = do
 getMoveUnitArgs :: IO MoveUnitArgs
 getMoveUnitArgs = do
    args <- getArgs
-   validateArgs args
+   validateArgs args 3 [ "unit-name", "from-subdirectory", "to-subdirectory" ]
+
    return
       MoveUnitArgs
          { unitName   = args !! 0
          , fromSubdir = args !! 1
          , toSubdir   = args !! 2 }
-
-
-validateArgs :: [String] -> IO ()
-validateArgs args =
-   if isValidArgCount
-      then return ()
-      else error "usage: unit-name from-subdirectory to-subdirectory"
-
-   where isValidArgCount = length args == 3
 
 
 moveUnit :: MoveUnitArgs -> IO ()

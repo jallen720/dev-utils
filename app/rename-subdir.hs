@@ -5,6 +5,7 @@ import Control.Monad (filterM, foldM)
 import DevUtils.Unit (unitFileRootDirs, unitFileExtensions)
 import DevUtils.Utils (quote, directify)
 import DevUtils.Source (moveSourceFiles)
+import DevUtils.Console (validateArgs)
 
 import DevUtils.FileSystem
    ( FileMoveOp (..)
@@ -25,20 +26,12 @@ main = getRenameSubdirArgs >>= renameSubdir
 getRenameSubdirArgs :: IO RenameSubdirArgs
 getRenameSubdirArgs = do
    args <- getArgs
-   validateArgs args
+   validateArgs args 2 [ "from-subdirectory", "to-subdirectory" ]
+
    return
       RenameSubdirArgs
          { fromSubdir = args !! 0
          , toSubdir   = args !! 1 }
-
-
-validateArgs :: [String] -> IO ()
-validateArgs args =
-   if isValidArgs
-      then return ()
-      else error "usage: from-subdirectory to-subdirectory"
-
-   where isValidArgs = length args == 2
 
 
 renameSubdir :: RenameSubdirArgs -> IO ()
