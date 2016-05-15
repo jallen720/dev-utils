@@ -1,1 +1,1 @@
-class [[ NAME ]]Test final : testing::Test {};
+class [[ NAME ]]Test final : public testing::Test {};
