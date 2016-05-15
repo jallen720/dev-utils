@@ -8,7 +8,11 @@ import Data.List
    , isPrefixOf
    , isInfixOf )
 
-import DevUtils.Utils (ReplaceOp (..), quote)
+import DevUtils.Utils
+   ( ReplaceOp (..)
+   , quote
+   , dropUntilEndOf )
+
 import DevUtils.Unit (unitFileRootDirs, unitFileExtensions)
 
 import DevUtils.FileSystem
@@ -18,6 +22,11 @@ import DevUtils.FileSystem
    , moveFile
    , recursiveFileList
    , replaceInFile )
+
+
+includeRoots =
+   [ "include/"
+   , "tests/include/" ]
 
 
 moveSourceFiles :: [FileMoveOp] -> IO ()
@@ -54,7 +63,8 @@ updateIncludes fileMoveOps =
                >>= return . assignIncludeReplaceOp sourceFile
 
          assignIncludeReplaceOp sourceFile source =
-            (sourceFile, filter (isInSource source) includesToCheckFor)
+            ( sourceFile
+            , filter (isInSource source) includesToCheckFor )
 
          isInSource source (ReplaceOp fromInclude _) =
             isInfixOf fromInclude source
@@ -62,14 +72,21 @@ updateIncludes fileMoveOps =
          includesToCheckFor =
             map getIncludeReplaceOp . filter isIncludeFile $ fileMoveOps
 
-         getIncludeReplaceOp (FileMoveOp fromInclude toInclude) =
-            ReplaceOp
-               (includeDirective fromInclude)
-               (includeDirective toInclude)
 
-         includeDirective = ("#include " ++) . quote . includePath
-         includePath = drop $ length "include/"
-         isIncludeFile = isPrefixOf "include/" . fromFile
+getIncludeReplaceOp :: FileMoveOp -> ReplaceOp
+getIncludeReplaceOp (FileMoveOp fromInclude toInclude) =
+   ReplaceOp
+      (includeDirective fromInclude)
+      (includeDirective toInclude)
+
+
+isIncludeFile :: FileMoveOp -> Bool
+isIncludeFile (FileMoveOp fromFile _) =
+   any (flip isPrefixOf fromFile) includeRoots
+
+
+includeDirective :: String -> String
+includeDirective = ("#include " ++) . quote . dropUntilEndOf "include/"
 
 
 sourceFiles :: IO [String]

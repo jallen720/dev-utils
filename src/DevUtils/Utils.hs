@@ -7,11 +7,13 @@ module DevUtils.Utils
    , directify
    , extensionify
    , quote
-   , getReplaceOpChain ) where
+   , getReplaceOpChain
+   , dropUntilEndOf ) where
 
 
 import Data.Maybe (fromJust)
 import Data.String.Utils (replace)
+import Data.List.Split (splitOn)
 
 
 data ReplaceOp =
@@ -72,3 +74,7 @@ getReplaceOpChain :: [ReplaceOp] -> (String -> String)
 getReplaceOpChain = foldl linkReplaceOp id
    where linkReplaceOp replaceOpChain (ReplaceOp fromString toString) =
             replaceOpChain . replace fromString toString
+
+
+dropUntilEndOf :: String -> (String -> String)
+dropUntilEndOf substring = (!!1) . splitOn substring

@@ -70,6 +70,12 @@ unitFileData =
          [ ("description" , "test source")
          , ("rootDir"     , "tests/src/")
          , ("extension"   , ".cpp") ]
+      ),
+      (
+         'f',
+         [ ("description" , "test fixture")
+         , ("rootDir"     , "tests/include/")
+         , ("extension"   , ".hpp") ]
       )
    ]
 
@@ -81,7 +87,8 @@ unitFileExtensions = nub . map (get "extension" . snd) $ unitFileData
 snippetGetters =
    [ (templateImplFileKey , getTemplateImplSnippet)
    , ('s'                 , getSourceSnippet)
-   , ('t'                 , getTestSourceSnippet) ]
+   , ('t'                 , getTestSourceSnippet)
+   , ('f'                 , getTestFixtureSnippet) ]
 
 
 createUnit :: UnitInput -> Unit
@@ -124,11 +131,21 @@ associatedFiles unit fileKeys = map (associatedFile unit) fileKeys
 associatedFile :: Unit -> FileKey -> String
 associatedFile (Unit name _ subdir) fileKey =
    createFilePath $ get fileKey unitFileData
-   where createFilePath unitFileData =
-            get "rootDir" unitFileData ++
-            subdir ++
-            name ++
-            get "extension" unitFileData
+   where createFilePath unitData =
+            get "rootDir" unitData ++
+            getSubdir ++
+            getFileName ++
+            get "extension" unitData
+
+         getSubdir =
+            if fileKey == 'f'
+               then subdir ++ "Fixtures/"
+               else subdir
+
+         getFileName =
+            if fileKey == 'f'
+               then name ++ "Test"
+               else name
 
 
 getHeaderSnippet :: Unit -> IO String
@@ -171,6 +188,19 @@ getTestSourceSnippet unit =
 getTestSnippet :: Unit -> IO String
 getTestSnippet (Unit name _ _) =
    getTemplate "test" [ ReplaceOp "NAME" name ] >>= stripTrailingNewline
+
+
+getTestFixtureSnippet :: Unit -> IO String
+getTestFixtureSnippet unit =
+   getTestFixtureClassSnippet unit >>= \testFixtureClassSnippet ->
+      getNamespaceSnippet testFixtureClassSnippet unit >>= \content ->
+         getTemplate "testFixture" [ ReplaceOp "CONTENT" content]
+
+
+getTestFixtureClassSnippet :: Unit -> IO String
+getTestFixtureClassSnippet (Unit name _ _) =
+   getTemplate "testFixtureClass" [ ReplaceOp "NAME" name ]
+       >>= stripTrailingNewline
 
 
 emptyNamespaceSnippet :: (Unit -> IO String)
