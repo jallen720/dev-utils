@@ -87,7 +87,6 @@ unitFileExtensions = nub . map (get "extension" . snd) $ unitFileData
 snippetGetters =
    [ (templateImplFileKey , getTemplateImplSnippet)
    , ('s'                 , getSourceSnippet)
-   , ('t'                 , getTestSourceSnippet)
    , ('f'                 , getTestFixtureSnippet) ]
 
 
@@ -107,14 +106,20 @@ createUnitFile unit fileKeys fileKey = getContent >>= createFile unitFile
          getContent = snippetGetter unit
 
          snippetGetter =
-            if fileKey == 'h'
-               then headerSnippetGetter
-               else get fileKey snippetGetters
+            case fileKey of
+               'h' -> headerSnippetGetter
+               't' -> testSourceSnippetGetter
+               _   -> get fileKey snippetGetters
 
          headerSnippetGetter =
             if 'i' `elem` fileKeys
                then getTemplateHeaderSnippet
                else getHeaderSnippet
+
+         testSourceSnippetGetter =
+            if 'f' `elem` fileKeys
+               then getTestSourceWithFixtureSnippet
+               else getTestSourceSnippet
 
 
 unitFiles :: Name -> Subdir -> IO [String]
@@ -180,14 +185,29 @@ getSourceSnippet unit =
 
 getTestSourceSnippet :: Unit -> IO String
 getTestSourceSnippet unit =
-   getTestSnippet unit >>= \testSnippet ->
+   getTestSnippet unit False >>= \testSnippet ->
       getNamespaceSnippet testSnippet unit >>= \content ->
          getTemplate "testSource" $ getSourceReplaceOps unit content
 
 
-getTestSnippet :: Unit -> IO String
-getTestSnippet (Unit name _ _) =
-   getTemplate "test" [ ReplaceOp "NAME" name ] >>= stripTrailingNewline
+getTestSourceWithFixtureSnippet :: Unit -> IO String
+getTestSourceWithFixtureSnippet unit =
+   getTestSnippet unit True >>= \testSnippet ->
+      getNamespaceSnippet testSnippet unit >>= \content ->
+         getTemplate "testSourceWithFixture" $
+            getSourceReplaceOps unit content ++
+            [ ReplaceOp "FIXTURE_INCLUDE" fixtureInclude ]
+
+   where fixtureInclude = unitInclude unit fixturePath
+
+
+getTestSnippet :: Unit -> Bool -> IO String
+getTestSnippet (Unit name _ _) withFixture =
+   getTemplate templateName [ ReplaceOp "NAME" name ] >>= stripTrailingNewline
+   where templateName =
+            if withFixture
+               then "testWithFixture"
+               else "test"
 
 
 getTestFixtureSnippet :: Unit -> IO String
@@ -232,6 +252,12 @@ includePath extension (Unit name _ subdir) =
    validSubdir ++ name ++ validExtension
    where validSubdir = directify subdir
          validExtension = extensionify extension
+
+
+fixturePath :: Unit -> String
+fixturePath (Unit name _ subdir) =
+   validSubdir ++ "Fixtures/" ++ name ++ "Test" ++ headerExtension
+   where validSubdir = directify subdir
 
 
 getSourceReplaceOps :: Unit -> String -> [ReplaceOp]
