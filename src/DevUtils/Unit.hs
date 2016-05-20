@@ -1,13 +1,14 @@
 module DevUtils.Unit
    ( UnitInput
    , FileKey
-   , Unit
+   , Unit (..)
    , unitFileData
    , unitFileRootDirs
    , unitFileExtensions
    , createUnit
    , createUnitFiles
    , unitFiles
+   , associatedFile
    , associatedFiles ) where
 
 

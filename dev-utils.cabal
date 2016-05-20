@@ -78,6 +78,19 @@ executable rename-unit
                   , MissingH
 
 
+executable unit-dependents
+    default-language : Haskell2010
+    hs-source-dirs   : app
+    main-is          : unit-dependents.hs
+    ghc-options      : -threaded -rtsopts -with-rtsopts=-N
+
+    build-depends : base
+                  , dev-utils
+                  , directory
+                  , MissingH
+                  , strict
+
+
 test-suite dev-utils-test
     default-language : Haskell2010
     hs-source-dirs   : tests

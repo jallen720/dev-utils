@@ -1,4 +1,8 @@
-module DevUtils.Source (moveSourceFiles) where
+module DevUtils.Source
+   ( moveSourceFiles
+   , isIncludeFile
+   , includeDirective
+   , sourceFiles ) where
 
 
 import qualified System.IO.Strict as Strict (readFile)
@@ -70,7 +74,9 @@ updateIncludes fileMoveOps =
             isInfixOf fromInclude source
 
          includesToCheckFor =
-            map getIncludeReplaceOp . filter isIncludeFile $ fileMoveOps
+            map getIncludeReplaceOp . filter isIncludeFileMoveOp $ fileMoveOps
+
+         isIncludeFileMoveOp = isIncludeFile . fromFile
 
 
 getIncludeReplaceOp :: FileMoveOp -> ReplaceOp
@@ -80,9 +86,8 @@ getIncludeReplaceOp (FileMoveOp fromInclude toInclude) =
       (includeDirective toInclude)
 
 
-isIncludeFile :: FileMoveOp -> Bool
-isIncludeFile (FileMoveOp fromFile _) =
-   any (flip isPrefixOf fromFile) includeRoots
+isIncludeFile :: String -> Bool
+isIncludeFile file = any (flip isPrefixOf file) includeRoots
 
 
 includeDirective :: String -> String
