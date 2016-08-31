@@ -14,7 +14,7 @@ include("${CMAKE_PATH}/macros/add_bin_tests.cmake")
 configure_project()
 
 # Library
-module_dependency("JCore")
+module_dependency("CppUtils")
 add_bin()
 
 # Tests
