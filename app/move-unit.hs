@@ -24,7 +24,7 @@ main = do
 getMoveUnitArgs :: IO MoveUnitArgs
 getMoveUnitArgs = do
    args <- getArgs
-   validateArgs args 3 [ "unit-name", "from-subdirectory", "to-subdirectory" ]
+   validateArgs args [ "unit-name", "from-subdirectory", "to-subdirectory" ]
 
    return
       MoveUnitArgs

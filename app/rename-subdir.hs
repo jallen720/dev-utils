@@ -26,7 +26,7 @@ main = getRenameSubdirArgs >>= renameSubdir
 getRenameSubdirArgs :: IO RenameSubdirArgs
 getRenameSubdirArgs = do
    args <- getArgs
-   validateArgs args 2 [ "from-subdirectory", "to-subdirectory" ]
+   validateArgs args [ "from-subdirectory", "to-subdirectory" ]
 
    return
       RenameSubdirArgs

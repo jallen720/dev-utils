@@ -37,7 +37,7 @@ main = do
 getUnitDependentsArgs :: IO UnitDependentsArgs
 getUnitDependentsArgs = do
    args <- getArgs
-   validateArgs args 2 [ "unit-name", "unit-subdirectory" ]
+   validateArgs args [ "unit-name", "unit-subdirectory" ]
 
    return
       UnitDependentsArgs

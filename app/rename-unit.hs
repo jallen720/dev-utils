@@ -29,7 +29,7 @@ main = do
 getRenameUnitArgs :: IO RenameUnitArgs
 getRenameUnitArgs = do
    args <- getArgs
-   validateArgs args 3 [ "from-name", "to-name", "unit-subdirectory" ]
+   validateArgs args [ "from-name", "to-name", "unit-subdirectory" ]
 
    return
       RenameUnitArgs
