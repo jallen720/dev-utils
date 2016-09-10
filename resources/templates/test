@@ -1,3 +1,4 @@
-TEST([[ NAME ]]Test, test) {
+TEST([[ NAME ]]Test, test)
+{
 
 }

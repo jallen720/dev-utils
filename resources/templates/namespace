@@ -1,4 +1,5 @@
-namespace [[ NAMESPACE ]] {
+namespace [[ NAMESPACE ]]
+{
 
 
 [[ CONTENT ]]
